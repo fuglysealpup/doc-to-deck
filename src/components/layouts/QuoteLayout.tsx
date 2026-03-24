@@ -120,18 +120,36 @@ export default function QuoteLayout({ slide, theme, totalSlides }: SlideProps) {
           </p>
         )}
 
-        {/* Bullets joined as attribution */}
+        {/* Bullets as a subtle horizontal row */}
         {slide.bullets.length > 0 && (
-          <p
+          <div
             style={{
-              fontSize: 12,
-              color: mutedColor,
-              marginTop: 24,
-              letterSpacing: '0.02em',
+              marginTop: 32,
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '6px 20px',
             }}
           >
-            {slide.bullets.join(' · ')}
-          </p>
+            {slide.bullets.slice(0, 3).map((bullet, i) => (
+              <span
+                key={i}
+                style={{
+                  fontSize: 11,
+                  color: mutedColor,
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase' as const,
+                  fontWeight: 500,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {i > 0 && (
+                  <span style={{ marginRight: 20, opacity: 0.4 }}>·</span>
+                )}
+                {bullet}
+              </span>
+            ))}
+          </div>
         )}
       </div>
 

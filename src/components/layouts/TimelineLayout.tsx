@@ -1,6 +1,7 @@
 'use client';
 
 import { SlideProps } from '@/src/types/deck';
+import { renderBullet } from '@/src/lib/parseBullet';
 
 function parseTimeLabel(bullet: string): { label: string; text: string } {
   // Match patterns like "Near term:", "Q1 2026 -", "Now:", "Month 1-3:", "2026:"
@@ -33,20 +34,6 @@ export default function TimelineLayout({ slide, theme, totalSlides }: SlideProps
         style={{ padding: '44px 56px' }}
         className="flex h-full flex-col"
       >
-        {/* Eyebrow */}
-        <div
-          style={{
-            color: theme.typography.muted,
-            fontSize: 11,
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase' as const,
-            fontWeight: 600,
-            marginBottom: 14,
-          }}
-        >
-          {slide.type}
-        </div>
-
         {/* Accent line */}
         <div
           style={{
@@ -124,11 +111,10 @@ export default function TimelineLayout({ slide, theme, totalSlides }: SlideProps
                 <div
                   style={{
                     fontSize: 13,
-                    color: theme.typography.body,
                     lineHeight: 1.5,
                   }}
                 >
-                  {text}
+                  {renderBullet(text, theme.typography.body, theme.typography.muted)}
                 </div>
               </div>
             );

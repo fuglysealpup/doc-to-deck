@@ -1,6 +1,7 @@
 'use client';
 
 import { SlideProps } from '@/src/types/deck';
+import { renderBullet } from '@/src/lib/parseBullet';
 
 export default function ListLayout({ slide, theme, totalSlides }: SlideProps) {
   const bg = theme.backgrounds[slide.type];
@@ -20,20 +21,6 @@ export default function ListLayout({ slide, theme, totalSlides }: SlideProps) {
         style={{ padding: '44px 56px' }}
         className="flex h-full flex-col"
       >
-        {/* Eyebrow */}
-        <div
-          style={{
-            color: theme.typography.muted,
-            fontSize: 11,
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase' as const,
-            fontWeight: 600,
-            marginBottom: 14,
-          }}
-        >
-          {slide.type}
-        </div>
-
         {/* Accent line */}
         <div
           style={{
@@ -93,34 +80,33 @@ export default function ListLayout({ slide, theme, totalSlides }: SlideProps) {
         )}
 
         {/* Bullet list */}
-        <div className="flex flex-1 flex-col justify-center gap-2">
+        <div className="flex flex-1 flex-col justify-center gap-4">
           {slide.bullets.map((bullet, i) => (
             <div
               key={i}
               style={{
                 display: 'flex',
-                gap: 10,
+                gap: 12,
                 alignItems: 'flex-start',
               }}
             >
               <div
                 style={{
-                  width: 5,
-                  height: 5,
+                  width: 6,
+                  height: 6,
                   borderRadius: '50%',
                   background: accent,
-                  marginTop: 5,
+                  marginTop: 6,
                   flexShrink: 0,
                 }}
               />
               <div
                 style={{
-                  fontSize: 13,
-                  color: theme.typography.muted,
+                  fontSize: 14,
                   lineHeight: 1.6,
                 }}
               >
-                {bullet}
+                {renderBullet(bullet, theme.typography.body, theme.typography.muted)}
               </div>
             </div>
           ))}

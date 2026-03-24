@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { DeckResponse } from "@/src/types/deck";
+import { useCallback, useState } from "react";
+import { DeckResponse, Slide } from "@/src/types/deck";
 import SlideRenderer from "@/src/components/SlideRenderer";
 
 export default function Home() {
@@ -9,6 +9,21 @@ export default function Home() {
   const [result, setResult] = useState<DeckResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const updateSlide = useCallback(
+    (slideNumber: number, updatedSlide: Slide) => {
+      setResult((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          slides: prev.slides.map((s) =>
+            s.slide_number === slideNumber ? updatedSlide : s
+          ),
+        };
+      });
+    },
+    []
+  );
 
   async function handleGenerate() {
     if (!doc.trim()) return;
@@ -98,7 +113,7 @@ export default function Home() {
         )}
 
         {/* Results */}
-        {result && <SlideRenderer deck={result} />}
+        {result && <SlideRenderer deck={result} onUpdateSlide={updateSlide} />}
       </div>
     </main>
   );

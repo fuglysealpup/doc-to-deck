@@ -1,6 +1,7 @@
 'use client';
 
 import { SlideProps } from '@/src/types/deck';
+import { renderBullet } from '@/src/lib/parseBullet';
 
 export default function SplitLayout({ slide, theme, totalSlides }: SlideProps) {
   const bg = theme.backgrounds[slide.type];
@@ -37,20 +38,6 @@ export default function SplitLayout({ slide, theme, totalSlides }: SlideProps) {
       >
         {/* Left column */}
         <div className="flex flex-1 flex-col justify-center">
-          {/* Eyebrow */}
-          <div
-            style={{
-              color: theme.typography.muted,
-              fontSize: 11,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase' as const,
-              fontWeight: 600,
-              marginBottom: 14,
-            }}
-          >
-            {slide.type}
-          </div>
-
           {/* Accent line */}
           <div
             style={{
@@ -135,24 +122,11 @@ export default function SplitLayout({ slide, theme, totalSlides }: SlideProps) {
             >
               <div
                 style={{
-                  fontSize: 10,
-                  fontWeight: 600,
-                  color: accent,
-                  textTransform: 'uppercase' as const,
-                  letterSpacing: '0.06em',
-                  marginBottom: 6,
-                }}
-              >
-                Point {i + 1}
-              </div>
-              <div
-                style={{
                   fontSize: 13,
-                  color: theme.typography.body,
                   lineHeight: 1.5,
                 }}
               >
-                {bullet}
+                {renderBullet(bullet, theme.typography.body, theme.typography.muted)}
               </div>
             </div>
           ))}
