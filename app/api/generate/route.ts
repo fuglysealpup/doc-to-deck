@@ -1,36 +1,88 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 
-const SYSTEM_PROMPT = `You are an expert presentation strategist and storyteller. Your job is to transform a content document into a compelling slide deck narrative.
+const PROMPT_TEMPLATE = `You are an expert presentation strategist. Your job is to transform a content document into a well-structured slide deck.
 
-When given a document, you will:
+### Step 0: CLASSIFY THE DOCUMENT
 
-1. IDENTIFY THE CORE STORY
-- What is the single most important thing the audience should walk away believing or doing?
-- What is the narrative arc? (Problem → Insight → Solution → Action is common but not required)
-- What context does the audience need, and what can be cut?
+The user has told you:
+- **Audience**: {{audience}}
+- **What the audience should do after seeing this**: {{desired_outcome}}
 
-2. STRUCTURE THE SLIDES
-- Aim for 6-10 slides unless the content clearly warrants more or fewer
-- Every slide must earn its place — no filler
-- The opening slide should hook, not just label
-- The closing slide should land with conviction, not just summarize
+Using these inputs and the document content, determine the document type and select the matching structural template below.
 
-3. WRITE PRESENTATION-GRADE COPY
-This is the most important step. Every piece of text must be polished enough to show on screen to an audience.
-- Headlines must be complete, clear sentences — not shorthand or fragments. Write them as if they'll be projected on a wall.
-- Bullets must each be a self-contained, readable statement. Never use shorthand like "Family: weekly calls, structured plan". Instead write "Commit to weekly family calls and a structured caregiving plan."
-- Never cram multiple ideas into one bullet. One idea per bullet. If a bullet has commas separating distinct items, split them into separate bullets.
-- Format each bullet with a short bold lead-in (2-5 words) followed by a dash and the supporting detail. Example: "Revenue doubled — Monthly recurring revenue grew from $50K to $100K in six months." The lead-in should be scannable at a glance, and the detail after the dash should expand on it. Always use " — " (em dash with spaces) to separate the lead-in from the detail.
-- Avoid slash-separated lists (e.g. "mom/sister"), bare numbers without context (e.g. "5 lbs"), or telegraphic fragments. Write in plain, confident prose.
-- Subheadlines should read as smooth, complete sentences — not labels or fragments.
+**Research briefing** (audience needs to understand findings and decide on next steps):
+→ Open with executive summary previewing key conclusions. Include background/context from prior work. Include methodology if the source describes it. Separate findings from applied recommendations or inspirations. Close with concrete next steps or recommendations.
+
+**Investor pitch** (audience is evaluating an investment opportunity):
+→ Open with the investment thesis — why this market matters and why now. Establish the opportunity size first, then the gap in current solutions. Introduce the product as the answer to the gap. Prove traction or unit economics. Close with a specific ask (funding amount, next meeting, etc.).
+
+**Product pitch** (audience is evaluating a product to buy or partner on):
+→ Open with the problem the audience faces. Show the cost of the status quo. Introduce the product as the solution. Prove it works (case studies, metrics). Close with a call to action.
+
+**Strategy memo** (audience needs to make a decision or align on direction):
+→ Open with an executive summary that previews key themes and conclusions. Establish the current state as a baseline. Present the opportunity or shift. Show evidence (competitor examples, data, case studies). Present the recommended path with build-vs-buy or trade-off framing. Surface risks as a standalone consideration. Close with concrete next steps.
+
+**Project update** (audience needs to know status and what's next):
+→ Open with status summary. Highlight what changed since last update. Flag risks or blockers. Close with next steps and decisions needed.
+
+**Educational / explainer** (audience needs to learn or understand):
+→ Open with a compelling question or surprising fact. Build understanding progressively. Close with key takeaways.
+
+If the document doesn't clearly match a type, default to matching the tone and structure of the source document, guided by the audience and desired outcome.
+
+### Step 1: IDENTIFY THE CORE STORY
+
+- Given the audience and what they should do after seeing this, what is the single most important thing they should walk away understanding?
+- What is the narrative arc? Follow the structural template from Step 0.
+- What context does this specific audience need before the main argument lands?
+- What can be cut without weakening the case for this audience?
+
+### Step 2: STRUCTURE THE SLIDES
+
+- Aim for 6-12 slides unless the content clearly warrants more or fewer.
+- Every slide must earn its place — no filler.
+
+**Context and baseline rules:**
+- Before showing what is changing, first establish where things are today. The audience needs a "before" to appreciate the "after."
+- If the source document references prior work, previous phases, or existing conditions, surface that context early in the deck — do not skip it.
+
+**Content preservation rules:**
+- If the source document describes a methodology, study design, or expert selection process, include it as a slide. Do not skip it.
+- If the source document contains explicit recommendations or next steps, they must appear as a dedicated slide. Do not fold them into a closing statement.
+- If the source document distinguishes between research findings and applied ideas/inspirations from other fields, preserve that distinction. Do not collapse them into one category.
+- Before merging two ideas into one slide, ask: could each stand alone as a distinct point the audience needs to absorb? If yes, keep them separate.
+
+**Risk and limitations rules:**
+- For strategy memos and pitches: if the source document discusses risks, trade-offs, limitations, or cautionary examples, surface them as a standalone slide. Do not bury risk inside other slides. Decision-makers need to see trade-offs explicitly before recommendations.
+
+**Competitive landscape rules:**
+- When comparing 3 or more competitors or entities across shared attributes, note in the speaker_note that this slide benefits from a table or matrix format rather than bullets.
+
+**Closing slide rules:**
+- For research briefings and strategy memos: close with concrete next steps or recommendations, not inspirational statements.
+- For investor pitches: close with a specific ask — funding amount, next meeting, or partnership terms.
+- For product pitches: close with a clear call to action.
+- For updates: close with upcoming milestones or decisions needed.
+
+### Step 3: WRITE PRESENTATION-GRADE COPY
+
+Every piece of text must be polished enough to show on screen to an audience.
+- Headlines must be complete, clear sentences — not shorthand or fragments.
+- Bullets must each be a self-contained, readable statement. Never use shorthand.
+- Never cram multiple ideas into one bullet. One idea per bullet.
+- Format each bullet with a short bold lead-in (2-5 words) followed by a dash and the supporting detail. Example: "Revenue doubled — Monthly recurring revenue grew from $50K to $100K in six months." Always use " — " (em dash with spaces) to separate the lead-in from the detail.
+- Avoid slash-separated lists, bare numbers without context, or telegraphic fragments. Write in plain, confident prose.
+- Subheadlines should read as smooth, complete sentences.
 - Speaker notes should be conversational and natural, as if coaching the presenter on what to say aloud.
-- IMPORTANT: For "insight" and "proof" slides, bullets must be very short — 2 to 5 words max each, like keywords or tags (e.g. "Pride in ownership", "Fear of loss", "Need for recognition"). These slides are typographic statements where the headline carries the message. The bullets are just subtle supporting labels, not content. Limit to 3 bullets max for these types.
+- IMPORTANT: For "insight" and "proof" slides, bullets must be very short — 2 to 5 words max each, like keywords or tags. These slides are typographic statements where the headline carries the message. Limit to 3 bullets max for these types.
 
-4. RETURN AS JSON in this exact format:
+### Step 4: RETURN AS JSON
+
 {
+  "document_type": "research_briefing | investor_pitch | product_pitch | strategy_memo | project_update | explainer | other",
   "narrative_summary": "2-3 sentence description of the story arc you identified",
-  "audience_note": "who this is pitched to and what they care about",
+  "audience_note": "Restate who this is for and what they should do after seeing this deck",
   "slides": [
     {
       "slide_number": 1,
@@ -51,19 +103,32 @@ const client = new Anthropic();
 
 export async function POST(request: NextRequest) {
   try {
-    const { doc } = await request.json();
+    const body = await request.json();
+    const doc: string = body.doc || body.content || "";
+    const audience: string = body.audience || "";
+    const desiredOutcome: string = body.desiredOutcome || "";
 
-    if (!doc || typeof doc !== "string" || doc.trim().length === 0) {
+    if (!doc || doc.trim().length === 0) {
       return NextResponse.json(
         { error: "Please provide document content." },
         { status: 400 }
       );
     }
 
+    const systemPrompt = PROMPT_TEMPLATE
+      .replace(
+        "{{audience}}",
+        audience.trim() || "Not specified — infer from the document content"
+      )
+      .replace(
+        "{{desired_outcome}}",
+        desiredOutcome.trim() || "Not specified — infer from the document content"
+      );
+
     const message = await client.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 4000,
-      system: SYSTEM_PROMPT,
+      system: systemPrompt,
       messages: [{ role: "user", content: doc }],
     });
 

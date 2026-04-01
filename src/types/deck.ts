@@ -20,6 +20,7 @@ export interface Slide {
 }
 
 export interface DeckResponse {
+  document_type?: string;
   narrative_summary: string;
   audience_note: string;
   slides: Slide[];

@@ -9,6 +9,8 @@ type ExportStatus = "idle" | "exporting" | "success" | "error";
 
 export default function Home() {
   const [doc, setDoc] = useState("");
+  const [audience, setAudience] = useState("");
+  const [desiredOutcome, setDesiredOutcome] = useState("");
   const [result, setResult] = useState<DeckResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -103,7 +105,7 @@ export default function Home() {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ doc }),
+        body: JSON.stringify({ doc, audience, desiredOutcome }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -139,6 +141,54 @@ export default function Home() {
           rows={12}
           className="w-full rounded-xl border border-gray-200 bg-white px-5 py-4 text-base text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200"
         />
+
+        {/* Audience & outcome fields */}
+        <div className="mt-4 flex gap-4">
+          <div className="flex-1">
+            <label
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                textTransform: "uppercase" as const,
+                letterSpacing: "0.08em",
+                color: "#999",
+                display: "block",
+                marginBottom: 6,
+              }}
+            >
+              Who is this for?
+            </label>
+            <input
+              type="text"
+              value={audience}
+              onChange={(e) => setAudience(e.target.value)}
+              placeholder='e.g., "TNC executives," "investors," "my engineering team"'
+              className="w-full rounded-xl border border-gray-200 bg-white px-5 py-3 text-base text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200"
+            />
+          </div>
+          <div className="flex-1">
+            <label
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                textTransform: "uppercase" as const,
+                letterSpacing: "0.08em",
+                color: "#999",
+                display: "block",
+                marginBottom: 6,
+              }}
+            >
+              What should they do after?
+            </label>
+            <input
+              type="text"
+              value={desiredOutcome}
+              onChange={(e) => setDesiredOutcome(e.target.value)}
+              placeholder='e.g., "approve next steps," "invest," "understand the findings"'
+              className="w-full rounded-xl border border-gray-200 bg-white px-5 py-3 text-base text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200"
+            />
+          </div>
+        </div>
 
         <button
           onClick={handleGenerate}
