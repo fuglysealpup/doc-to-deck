@@ -6,6 +6,8 @@ import CardsLayout from '@/src/components/layouts/CardsLayout';
 import QuoteLayout from '@/src/components/layouts/QuoteLayout';
 import TimelineLayout from '@/src/components/layouts/TimelineLayout';
 import ReferenceLayout from '@/src/components/layouts/ReferenceLayout';
+import StatHeroLayout from '@/src/components/layouts/StatHeroLayout';
+import TableLayout from '@/src/components/layouts/TableLayout';
 import React from 'react';
 
 export const intentLayoutMap: Record<SlideIntent, React.ComponentType<SlideProps>> = {
@@ -42,6 +44,8 @@ export const layoutComponentMap: Record<SlideLayout, React.ComponentType<SlidePr
   quote: QuoteLayout,
   timeline: TimelineLayout,
   reference: ReferenceLayout,
+  'stat-hero': StatHeroLayout,
+  'table': TableLayout,
 };
 
 export function getLayoutForSlide(slide: { type: SlideIntent; layout?: SlideLayout }): SlideLayout {

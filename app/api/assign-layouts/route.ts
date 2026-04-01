@@ -38,6 +38,14 @@ DO NOT USE WHEN: The content is not sequential or has no time markers.
 USE WHEN: Methodology details, source citations, structured reference information, formal records. Content that should feel authoritative and documented rather than persuasive.
 DO NOT USE WHEN: The content is making an argument or driving toward action.
 
+**stat-hero** — 2-3 large statistics displayed as big numbers with small descriptors below each.
+USE WHEN: The slide has 2-3 bullets where each bullet leads with a number, percentage, or metric (e.g., "89% — of residential streets"). The slide's purpose is to make key stats memorable and scannable.
+DO NOT USE WHEN: The bullets are full sentences without a clear stat lead-in, or there are more than 3 bullets, or the content is qualitative rather than quantitative.
+
+**table** — Structured two-column comparison with rows separated by thin lines.
+USE WHEN: The slide compares attributes across entities, lists feature/description pairs, or presents structured key-value data. The content is inherently tabular — each bullet has a label and a corresponding detail.
+DO NOT USE WHEN: The items don't have a consistent label-detail structure, or the content is a narrative sequence rather than a comparison.
+
 DECISION RULES:
 
 1. Count the bullets and check their length. This is the strongest signal:
@@ -52,6 +60,10 @@ DECISION RULES:
 3. "proof" intent does NOT automatically mean "quote." A proof slide with three distinct evidence points should be split or cards. A proof slide with one bold claim and short tags can be quote.
 
 4. "finding" intent does NOT automatically mean "cards." A finding with one dramatic data point should be quote. A finding with dense research citations should be reference.
+
+5. If 2-3 bullets each start with a number, percentage, dollar amount, or metric followed by " — ", this is a stat-hero slide.
+
+6. If 3+ bullets each follow a consistent "Label — Detail" pattern and the content is comparing attributes or listing specifications, consider table layout.
 
 Return a JSON array with one object per slide:
 
