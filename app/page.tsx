@@ -101,6 +101,8 @@ export default function Home() {
     setError("");
     setResult(null);
 
+    let deckData: DeckResponse | null = null;
+
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
@@ -111,12 +113,37 @@ export default function Home() {
       if (!res.ok) {
         setError(data.error || "Something went wrong.");
       } else {
+        deckData = data;
         setResult(data);
       }
     } catch {
       setError("Failed to connect to the server.");
     } finally {
       setLoading(false);
+    }
+
+    // Phase 2: Layout assignment (non-blocking)
+    if (deckData) {
+      try {
+        const layoutRes = await fetch("/api/assign-layouts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ slides: deckData.slides }),
+        });
+        if (layoutRes.ok) {
+          const { layouts } = await layoutRes.json();
+          const updatedSlides = deckData.slides.map((slide: Slide) => {
+            const assignment = layouts.find(
+              (l: { slide_number: number; layout: string }) =>
+                l.slide_number === slide.slide_number
+            );
+            return assignment ? { ...slide, layout: assignment.layout } : slide;
+          });
+          setResult({ ...deckData, slides: updatedSlides });
+        }
+      } catch (err) {
+        console.error("Layout assignment failed, using defaults:", err);
+      }
     }
   }
 

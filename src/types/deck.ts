@@ -10,9 +10,12 @@ export type SlideIntent =
   | 'structure'
   | 'closing';
 
+export type SlideLayout = 'hero' | 'split' | 'list' | 'cards' | 'quote' | 'timeline' | 'reference';
+
 export interface Slide {
   slide_number: number;
   type: SlideIntent;
+  layout?: SlideLayout;
   headline: string;
   subheadline: string;
   bullets: string[];

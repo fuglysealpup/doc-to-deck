@@ -12,22 +12,22 @@ The user has told you:
 Using these inputs and the document content, determine the document type and select the matching structural template below.
 
 **Research briefing** (audience needs to understand findings and decide on next steps):
-→ Open with executive summary previewing key conclusions. Include background/context from prior work. Include methodology if the source describes it. Separate findings from applied recommendations or inspirations. Close with concrete next steps or recommendations.
+→ Open with executive summary previewing key conclusions. The title slide and the executive summary are separate slides. The title slide names the topic. The executive summary slide comes immediately after and previews the key conclusions, themes, or thesis — framing what the audience should take away before the evidence begins. Do not combine them into one slide. Include background/context from prior work. Include methodology if the source describes it. Separate findings from applied recommendations or inspirations. Close with concrete next steps or recommendations.
 
 **Investor pitch** (audience is evaluating an investment opportunity):
-→ Open with the investment thesis — why this market matters and why now. Establish the opportunity size first, then the gap in current solutions. Introduce the product as the answer to the gap. Prove traction or unit economics. Close with a specific ask (funding amount, next meeting, etc.).
+→ Open with the investment thesis — why this market matters and why now. The title slide and the executive summary are separate slides. The title slide names the topic. The executive summary slide comes immediately after and previews the key conclusions, themes, or thesis — framing what the audience should take away before the evidence begins. Do not combine them into one slide. Establish the opportunity size first, then the gap in current solutions. Introduce the product as the answer to the gap. Prove traction or unit economics. Close with a specific ask (funding amount, next meeting, etc.).
 
 **Product pitch** (audience is evaluating a product to buy or partner on):
-→ Open with the problem the audience faces. Show the cost of the status quo. Introduce the product as the solution. Prove it works (case studies, metrics). Close with a call to action.
+→ Open with the problem the audience faces. The title slide and the executive summary are separate slides. The title slide names the topic. The executive summary slide comes immediately after and previews the key conclusions, themes, or thesis — framing what the audience should take away before the evidence begins. Do not combine them into one slide. Show the cost of the status quo. Introduce the product as the solution. Prove it works (case studies, metrics). Close with a call to action.
 
 **Strategy memo** (audience needs to make a decision or align on direction):
-→ Open with an executive summary that previews key themes and conclusions. Establish the current state as a baseline. Present the opportunity or shift. Show evidence (competitor examples, data, case studies). Present the recommended path with build-vs-buy or trade-off framing. Surface risks as a standalone consideration. Close with concrete next steps.
+→ Open with an executive summary that previews key themes and conclusions. The title slide and the executive summary are separate slides. The title slide names the topic. The executive summary slide comes immediately after and previews the key conclusions, themes, or thesis — framing what the audience should take away before the evidence begins. Do not combine them into one slide. Establish the current state as a baseline. Present the opportunity or shift. Show evidence (competitor examples, data, case studies). Present the recommended path with build-vs-buy or trade-off framing. Surface risks as a standalone consideration. Close with concrete next steps.
 
 **Project update** (audience needs to know status and what's next):
 → Open with status summary. Highlight what changed since last update. Flag risks or blockers. Close with next steps and decisions needed.
 
 **Educational / explainer** (audience needs to learn or understand):
-→ Open with a compelling question or surprising fact. Build understanding progressively. Close with key takeaways.
+→ Open with a compelling question or surprising fact. The title slide and the executive summary are separate slides. The title slide names the topic. The executive summary slide comes immediately after and previews the key takeaways — framing what the audience should learn before the explanation begins. Do not combine them into one slide. Build understanding progressively. Close with key takeaways.
 
 If the document doesn't clearly match a type, default to matching the tone and structure of the source document, guided by the audience and desired outcome.
 

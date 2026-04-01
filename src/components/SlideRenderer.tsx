@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { DeckResponse, Slide } from '@/src/types/deck';
 import { useTheme } from '@/src/lib/themeContext';
-import { intentLayoutMap } from '@/src/lib/intentMap';
+import { getLayoutForSlide, layoutComponentMap } from '@/src/lib/intentMap';
 import { themes } from '@/src/themes';
 
 const labelStyle: React.CSSProperties = {
@@ -273,7 +273,8 @@ export default function SlideRenderer({ deck, onUpdateSlide }: SlideRendererProp
       {/* Slides */}
       <div className="flex flex-col gap-2.5">
         {deck.slides.map((slide) => {
-          const LayoutComponent = intentLayoutMap[slide.type] || intentLayoutMap.context;
+          const layoutName = getLayoutForSlide(slide);
+          const LayoutComponent = layoutComponentMap[layoutName];
           const isEditing = editingSlide === slide.slide_number;
 
           return (
@@ -284,6 +285,7 @@ export default function SlideRenderer({ deck, onUpdateSlide }: SlideRendererProp
                 overflow: 'hidden',
                 boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
                 display: 'flex',
+                transition: 'all 0.3s ease',
               }}
             >
               {/* Slide preview */}
