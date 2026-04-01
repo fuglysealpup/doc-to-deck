@@ -4,34 +4,60 @@ import { Slide } from "@/src/types/deck";
 
 const SYSTEM_PROMPT = `You are a presentation design expert. Given a set of slides with their content and narrative intent, assign the optimal visual layout for each slide.
 
-Available layouts and when to use each:
+CRITICAL: Your job is to match CONTENT to the right CONTAINER. Do NOT simply assign the layout that the intent type would normally receive. Read the actual content — the headline, the bullets, their length and density — and pick the layout that makes that specific content look best.
 
-**hero** — Content anchored at the bottom of the slide with a large headline. Use for opening titles, closing statements, or any slide where a single bold message needs maximum visual impact. Best when there are few or no bullets.
+If every slide gets the layout its intent type would default to, you have failed at your job. Some slides SHOULD get their default, but many should not.
 
-**split** — Two columns: headline and subheadline on the left, bullet content as cards on the right. Use when the slide has a clear headline plus 2-4 supporting points that benefit from visual separation. Good for context-setting, background information, and structured overviews.
+Available layouts:
 
-**list** — Single column with headline and a vertical bullet list with accent dots. Use when the slide presents a straightforward list of points that should be scanned sequentially. Good for problems, requirements, or criteria.
+**hero** — Large headline anchored at bottom, minimal content.
+USE WHEN: The slide has 0-1 bullets and one powerful statement. Opening titles, closing asks, dramatic single-message moments.
+DO NOT USE WHEN: The slide has 3+ bullets with substantive content — they will be invisible in this layout.
 
-**cards** — Headline with bullets rendered as a grid of equal-weight cards. Use when 3-5 items have roughly equal importance and should be compared at a glance. Good for findings, features, or options that are peers, not a hierarchy.
+**split** — Two columns: headline left, card-style bullets right.
+USE WHEN: The slide has 2-4 supporting points that each deserve visual weight and space. The headline frames the argument, the bullets prove it.
+DO NOT USE WHEN: The slide has 5+ bullets (too cramped) or 0-1 bullets (empty right column).
 
-**quote** — Centered, large typographic treatment with minimal supporting text. Use when the slide has one powerful statement or insight that should dominate. Bullets appear as a subtle horizontal tagline. Best for "aha moment" slides, key insights, or dramatic proof points.
+**list** — Single column with headline and vertical bullet list.
+USE WHEN: The slide presents items that should be read top to bottom in sequence — problems, requirements, criteria, steps without time markers.
+DO NOT USE WHEN: The bullets are peers that should be compared side by side rather than read sequentially.
 
-**timeline** — Headline with sequential rows, each having a time/phase label and description. Use when the content describes phased plans, roadmaps, sequential steps, or chronological progression. Only works well when bullets contain temporal markers (phases, months, quarters, "near/mid/long term").
+**cards** — Headline with bullets as a grid of equal-weight cards.
+USE WHEN: 3-5 items have roughly equal importance and the audience should scan and compare them. Findings, features, competitive entries, options.
+DO NOT USE WHEN: One item is more important than the others, or the items form a sequence.
 
-**reference** — Clean list with left-border accent per item. Use for methodology details, source citations, structured reference information, or any content that reads as a formal record rather than a persuasive argument.
+**quote** — Centered, large typographic headline with minimal supporting text. Bullets appear as a subtle horizontal tagline beneath.
+USE WHEN: The slide has ONE dominant message and 0-3 very short bullets (under 5 words each) that serve as tags or labels, not explanations. Key insights, "aha" moments, bold thesis statements.
+DO NOT USE WHEN: The bullets are full sentences, contain data points, or describe distinct mechanisms. If the bullet text would be unreadable at 11px horizontal layout, this is the wrong choice.
 
-For each slide, consider:
-1. How many bullets does it have, and are they peers or a sequence?
-2. Is there one dominant message or multiple equal points?
-3. Does the content have temporal/phase structure?
-4. Is this a high-impact moment that needs visual drama, or an information-dense slide that needs clarity?
+**timeline** — Headline with sequential rows, each having a time/phase label.
+USE WHEN: The content has explicit temporal markers — phases, months, quarters, "near/mid/long term." Roadmaps, phased plans, chronological progression.
+DO NOT USE WHEN: The content is not sequential or has no time markers.
 
-Return a JSON array with one object per slide, containing only slide_number and layout:
+**reference** — Clean list with left-border accent per item.
+USE WHEN: Methodology details, source citations, structured reference information, formal records. Content that should feel authoritative and documented rather than persuasive.
+DO NOT USE WHEN: The content is making an argument or driving toward action.
+
+DECISION RULES:
+
+1. Count the bullets and check their length. This is the strongest signal:
+   - 0-1 bullets → hero or quote
+   - 2-4 bullets with full sentences → split or cards
+   - 3-5 short-phrase bullets → cards
+   - 4+ bullets in sequence → list or timeline
+   - Any bullets with temporal markers → timeline
+
+2. Check if bullet text is substantive. If bullets are full sentences with data, names, or mechanisms, they CANNOT be quote layout — the horizontal tagline will be unreadable.
+
+3. "proof" intent does NOT automatically mean "quote." A proof slide with three distinct evidence points should be split or cards. A proof slide with one bold claim and short tags can be quote.
+
+4. "finding" intent does NOT automatically mean "cards." A finding with one dramatic data point should be quote. A finding with dense research citations should be reference.
+
+Return a JSON array with one object per slide:
 
 [
   { "slide_number": 1, "layout": "hero" },
-  { "slide_number": 2, "layout": "split" },
-  { "slide_number": 3, "layout": "cards" }
+  { "slide_number": 2, "layout": "split" }
 ]
 
 Return ONLY the JSON array. No preamble, no explanation, no markdown fences.`;
@@ -52,7 +78,11 @@ export async function POST(request: NextRequest) {
       headline: s.headline,
       subheadline: s.subheadline || "",
       bullet_count: s.bullets.length,
-      bullets_preview: s.bullets.slice(0, 3),
+      bullets: s.bullets,
+      avg_bullet_length: Math.round(
+        s.bullets.reduce((sum: number, b: string) => sum + b.length, 0) /
+          (s.bullets.length || 1)
+      ),
     }));
 
     const message = await client.messages.create({
