@@ -15,7 +15,9 @@ Using these inputs and the document content, determine the document type and sel
 → Open with executive summary previewing key conclusions. The title slide and the executive summary are separate slides. The title slide names the topic. The executive summary slide comes immediately after and previews the key conclusions, themes, or thesis — framing what the audience should take away before the evidence begins. Do not combine them into one slide. Include background/context from prior work. Include methodology if the source describes it. Separate findings from applied recommendations or inspirations. Close with concrete next steps or recommendations.
 
 **Investor pitch** (audience is evaluating an investment opportunity):
-→ Open with the investment thesis — why this market matters and why now. The title slide and the executive summary are separate slides. The title slide names the topic. The executive summary slide comes immediately after and previews the key conclusions, themes, or thesis — framing what the audience should take away before the evidence begins. Do not combine them into one slide. Establish the opportunity size first, then the gap in current solutions. Introduce the product as the answer to the gap. Prove traction or unit economics. Close with a specific ask (funding amount, next meeting, etc.).
+→ Open with the investment thesis — why this market matters and why now. The title slide and the executive summary are separate slides. The title slide names the topic. The executive summary slide comes immediately after and previews the key conclusions, themes, or thesis — framing what the audience should take away before the evidence begins. Do not combine them into one slide.
+→ If the product concept is novel or category-creating (the audience needs to understand what it IS before market data makes sense), introduce the concept right after the problem, then validate with market data. If the product enters a known category, establish the opportunity size and competitive gap first, then introduce the product.
+→ Prove traction or unit economics. Close with a specific ask (funding amount, next meeting, etc.).
 
 **Product pitch** (audience is evaluating a product to buy or partner on):
 → Open with the problem the audience faces. The title slide and the executive summary are separate slides. The title slide names the topic. The executive summary slide comes immediately after and previews the key conclusions, themes, or thesis — framing what the audience should take away before the evidence begins. Do not combine them into one slide. Show the cost of the status quo. Introduce the product as the solution. Prove it works (case studies, metrics). Close with a call to action.
@@ -58,12 +60,27 @@ If the document doesn't clearly match a type, default to matching the tone and s
 
 **Competitive landscape rules:**
 - When comparing 3 or more competitors or entities across shared attributes, note in the speaker_note that this slide benefits from a table or matrix format rather than bullets.
+- For pitches: when the source document positions the company on two clear differentiating axes (e.g., price vs. experience, online vs. offline, speed vs. quality), note in the speaker_note that a 2×2 positioning matrix is more effective than a feature table. Identify the two axes in the speaker_note.
+
+**Data visualization hints:**
+- When a slide presents a formula or chain of reasoning (e.g., market size × fee = revenue, or investment → activity → return), note in the speaker_note that this benefits from a connected-stat-chain visualization: numbers linked by arrows showing the calculation, not independent stat callouts.
+- When the source document contains TAM (total addressable market), SAM (serviceable available market), and SOM (share of market) data, note in the speaker_note that proportional circles or a funnel visualization is the standard treatment. Present each level as a separate bullet with the number and definition.
+- When a slide presents 2-3 key statistics that answer the audience's primary question, note in the speaker_note that these benefit from large stat-hero treatment with minimal surrounding text.
 
 **Closing slide rules:**
 - For research briefings and strategy memos: close with concrete next steps or recommendations, not inspirational statements.
-- For investor pitches: close with a specific ask — funding amount, next meeting, or partnership terms.
+- For investor pitches: close with a specific ask — funding amount, next meeting, or partnership terms. Show what the investment buys and what it produces.
 - For product pitches: close with a clear call to action.
 - For updates: close with upcoming milestones or decisions needed.
+
+**Proof escalation rules:**
+When a deck includes multiple slides that serve as evidence, credibility, or validation, sequence them from foundational to external. The principle is: establish the facts first, then show that others corroborate them, then build toward action. The specific proof sequence depends on document type:
+
+- For investor pitches: demand exists (market data) → product works (demo, features) → business is viable (model, unit economics) → team can execute (credentials, track record) → others believe (press, testimonials, traction). Not every pitch will have all of these — use the ones present in the source document, in this order.
+- For research briefings: prior work established the baseline → methodology is sound → primary findings are grounded in data → external evidence corroborates findings → recommendations follow from evidence. If the source document contains both primary research and borrowed/external examples, present primary findings first.
+- For strategy memos: current state is well-understood → the opportunity or shift is supported by evidence → peer/competitor examples confirm the pattern → the recommended path accounts for risks → the action is the strongest option among alternatives.
+
+This is a sequencing guideline, not a rigid template. If the source document's own structure suggests a different order that is narratively coherent, follow the source.
 
 ### Step 3: WRITE PRESENTATION-GRADE COPY
 
@@ -74,7 +91,7 @@ Every piece of text must be polished enough to show on screen to an audience.
 - Format each bullet with a short bold lead-in (2-5 words) followed by a dash and the supporting detail. Example: "Revenue doubled — Monthly recurring revenue grew from $50K to $100K in six months." Always use " — " (em dash with spaces) to separate the lead-in from the detail.
 - Avoid slash-separated lists, bare numbers without context, or telegraphic fragments. Write in plain, confident prose.
 - Subheadlines should read as smooth, complete sentences.
-- Speaker notes should be conversational and natural, as if coaching the presenter on what to say aloud.
+- Speaker notes should be conversational and natural, as if coaching the presenter on what to say aloud. Include layout/visualization hints where applicable.
 - STAT-LEAD BULLETS: When a slide's primary purpose is to communicate 2-3 key metrics, statistics, or quantitative findings, format each bullet with the number or metric FIRST, followed by " — " and the descriptor. Example: "89% — of residential streets can be containerized" NOT "Street viability — 89% of residential streets can be containerized." Lead with the number so it becomes the visual anchor. Use this format when the audience should walk away remembering specific numbers. Limit to 2-3 bullets per slide when using this format.
 - TABLE-STRUCTURED BULLETS: When a slide compares 3 or more entities, options, or attributes across consistent dimensions, format bullets so each one follows a parallel "Entity/attribute — comparison detail" structure. Keep the lead-in terms short and consistent in style (all nouns, all the same level of specificity). Example for comparing container models: "Lifetime — Wheeled containers last 3 years vs. 8-11 years for stationary" and "Fleet compatibility — Wheeled works with existing trucks; stationary requires new ASL fleet." This parallel structure enables the layout system to render the content as a visual table.
 - IMPORTANT: For "insight" and "proof" slides, bullets must be very short — 2 to 5 words max each, like keywords or tags. These slides are typographic statements where the headline carries the message. Limit to 3 bullets max for these types.
@@ -92,7 +109,7 @@ Every piece of text must be polished enough to show on screen to an audience.
       "headline": "A complete, polished sentence that conveys this slide's message",
       "subheadline": "Supporting context in 1-2 smooth sentences",
       "bullets": ["One clear, self-contained point written as a complete thought", "Another distinct point, not shorthand"],
-      "speaker_note": "What the presenter should say or emphasize on this slide"
+      "speaker_note": "What the presenter should say or emphasize on this slide. Include layout/visualization hints where applicable."
     }
   ]
 }
