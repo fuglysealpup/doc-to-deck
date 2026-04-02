@@ -15,7 +15,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-gray-50 text-gray-900 antialiased">
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          {children}
+          <footer className="py-8 text-center text-xs text-gray-400">
+            <a href="/privacy" className="hover:text-gray-600 transition">Privacy</a>
+            <span className="mx-2">·</span>
+            <span>&copy; 2026 DocToDeck</span>
+          </footer>
+        </ThemeProvider>
       </body>
     </html>
   );
