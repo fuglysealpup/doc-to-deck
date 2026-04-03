@@ -46,6 +46,10 @@ DO NOT USE WHEN: The bullets are full sentences without a clear stat lead-in, or
 USE WHEN: The slide compares attributes across entities, lists feature/description pairs, or presents structured key-value data. The content is inherently tabular — each bullet has a label and a corresponding detail.
 DO NOT USE WHEN: The items don't have a consistent label-detail structure, or the content is a narrative sequence rather than a comparison.
 
+**comparison-matrix** — Multi-column grid with entities as rows and attributes as columns. Supports checkmark/x-mark icons for yes/no values.
+USE WHEN: The slide compares 3+ entities across 3+ shared attributes and the bullets use pipe-delimited format ("Entity | Attr1 | Attr2 | Attr3"). The first bullet is the header row. This is for structured competitive comparisons, feature matrices, or option evaluations where the audience needs to scan across both rows and columns.
+DO NOT USE WHEN: The data is two-column (use table instead), or bullets don't use pipe-delimited format, or there are fewer than 3 entities to compare.
+
 DECISION RULES:
 
 1. Count the bullets and check their length. This is the strongest signal:
@@ -64,6 +68,8 @@ DECISION RULES:
 5. If 2-3 bullets each start with a number, percentage, dollar amount, or metric followed by " — ", this is a stat-hero slide.
 
 6. If 3+ bullets each follow a consistent "Label — Detail" pattern and the content is comparing attributes or listing specifications, consider table layout.
+
+7. If bullets use pipe-delimited format ("Entity | Val1 | Val2 | Val3") with a header row, this is a comparison-matrix slide. The first bullet should contain column headers and remaining bullets are data rows.
 
 Return a JSON array with one object per slide:
 

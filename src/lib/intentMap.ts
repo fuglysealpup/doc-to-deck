@@ -8,6 +8,7 @@ import TimelineLayout from '@/src/components/layouts/TimelineLayout';
 import ReferenceLayout from '@/src/components/layouts/ReferenceLayout';
 import StatHeroLayout from '@/src/components/layouts/StatHeroLayout';
 import TableLayout from '@/src/components/layouts/TableLayout';
+import ComparisonMatrixLayout from '@/src/components/layouts/ComparisonMatrixLayout';
 import React from 'react';
 
 export const intentLayoutMap: Record<SlideIntent, React.ComponentType<SlideProps>> = {
@@ -46,6 +47,7 @@ export const layoutComponentMap: Record<SlideLayout, React.ComponentType<SlidePr
   reference: ReferenceLayout,
   'stat-hero': StatHeroLayout,
   'table': TableLayout,
+  'comparison-matrix': ComparisonMatrixLayout,
 };
 
 export function getLayoutForSlide(slide: { type: SlideIntent; layout?: SlideLayout }): SlideLayout {
