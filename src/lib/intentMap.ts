@@ -10,6 +10,7 @@ import StatHeroLayout from '@/src/components/layouts/StatHeroLayout';
 import TableLayout from '@/src/components/layouts/TableLayout';
 import ComparisonMatrixLayout from '@/src/components/layouts/ComparisonMatrixLayout';
 import ProConLayout from '@/src/components/layouts/ProConLayout';
+import DividerLayout from '@/src/components/layouts/DividerLayout';
 import React from 'react';
 
 export const intentLayoutMap: Record<SlideIntent, React.ComponentType<SlideProps>> = {
@@ -50,6 +51,7 @@ export const layoutComponentMap: Record<SlideLayout, React.ComponentType<SlidePr
   'table': TableLayout,
   'comparison-matrix': ComparisonMatrixLayout,
   'pro-con': ProConLayout,
+  'divider': DividerLayout,
 };
 
 export function getLayoutForSlide(slide: { type: SlideIntent; layout?: SlideLayout }): SlideLayout {

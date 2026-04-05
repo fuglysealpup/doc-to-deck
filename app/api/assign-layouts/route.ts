@@ -54,6 +54,10 @@ DO NOT USE WHEN: The data is two-column (use table instead), or bullets don't us
 USE WHEN: The slide presents trade-offs, pros vs. cons, benefits vs. risks, or advantages vs. disadvantages. Bullets are prefixed with "PRO:" or "CON:" to indicate which column they belong to. This is a consulting staple for decision slides.
 DO NOT USE WHEN: The content is not a balanced assessment, or there are no clear opposing categories, or all bullets are positives (use list or cards instead).
 
+**divider** — Bold, colorful section break slide with just a centered headline. Uses accent color gradient background with white text. Extremely minimal — no bullets, no cards, just the section title.
+USE WHEN: The slide has 0 bullets and serves as a section transition or topic break. The headline is short (1-5 words) and names a section rather than making an argument. This is for cognitive pacing between dense content sections.
+DO NOT USE WHEN: The slide has bullets or substantive content, or the headline is a full sentence making a point (use hero instead). Divider is for navigation, not persuasion.
+
 DECISION RULES:
 
 1. Count the bullets and check their length. This is the strongest signal:
@@ -76,6 +80,8 @@ DECISION RULES:
 7. If bullets use pipe-delimited format ("Entity | Val1 | Val2 | Val3") with a header row, this is a comparison-matrix slide. The first bullet should contain column headers and remaining bullets are data rows.
 
 8. If bullets are prefixed with "PRO:" and "CON:" (or the content clearly presents benefits vs. challenges/risks), this is a pro-con slide.
+
+9. If a slide has 0 bullets and a short headline (1-5 words) that names a section or topic rather than making an argument, this is a divider slide. Do not confuse with hero — hero slides make a statement, dividers just label a section transition.
 
 Return a JSON array with one object per slide:
 
