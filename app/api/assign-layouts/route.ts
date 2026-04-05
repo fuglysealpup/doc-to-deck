@@ -77,11 +77,11 @@ DECISION RULES:
 
 6. If 3+ bullets each follow a consistent "Label — Detail" pattern and the content is comparing attributes or listing specifications, consider table layout.
 
-7. If bullets use pipe-delimited format ("Entity | Val1 | Val2 | Val3") with a header row, this is a comparison-matrix slide. The first bullet should contain column headers and remaining bullets are data rows.
+7. If bullets use pipe-delimited format ("Entity | Val1 | Val2 | Val3") with a header row, this is a comparison-matrix slide. Also assign comparison-matrix when the speaker_note mentions "matrix", "comparison table", or "feature comparison". Do NOT assign the generic "table" layout to pipe-delimited comparison data — use comparison-matrix instead.
 
-8. If bullets are prefixed with "PRO:" and "CON:" (or the content clearly presents benefits vs. challenges/risks), this is a pro-con slide.
+8. If bullets are prefixed with "PRO:" and "CON:", this is a pro-con slide. Also assign pro-con when the speaker_note mentions "trade-offs", "pros and cons", or "balanced assessment".
 
-9. If a slide has 0 bullets and a short headline (1-5 words) that names a section or topic rather than making an argument, this is a divider slide. Do not confuse with hero — hero slides make a statement, dividers just label a section transition.
+9. Assign divider to slides with type "structure" that have an empty or missing bullets array. These are section break slides. Do NOT assign "hero" to structure-type slides that have no bullets — use "divider" instead. The title slide (slide 1) should still use "hero", not "divider".
 
 Return a JSON array with one object per slide:
 
