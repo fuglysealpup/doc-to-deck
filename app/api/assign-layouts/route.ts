@@ -50,6 +50,10 @@ DO NOT USE WHEN: The items don't have a consistent label-detail structure, or th
 USE WHEN: The slide compares 3+ entities across 3+ shared attributes and the bullets use pipe-delimited format ("Entity | Attr1 | Attr2 | Attr3"). The first bullet is the header row. This is for structured competitive comparisons, feature matrices, or option evaluations where the audience needs to scan across both rows and columns.
 DO NOT USE WHEN: The data is two-column (use table instead), or bullets don't use pipe-delimited format, or there are fewer than 3 entities to compare.
 
+**pro-con** — Two-column balanced assessment with benefits on the left and challenges/risks on the right.
+USE WHEN: The slide presents trade-offs, pros vs. cons, benefits vs. risks, or advantages vs. disadvantages. Bullets are prefixed with "PRO:" or "CON:" to indicate which column they belong to. This is a consulting staple for decision slides.
+DO NOT USE WHEN: The content is not a balanced assessment, or there are no clear opposing categories, or all bullets are positives (use list or cards instead).
+
 DECISION RULES:
 
 1. Count the bullets and check their length. This is the strongest signal:
@@ -70,6 +74,8 @@ DECISION RULES:
 6. If 3+ bullets each follow a consistent "Label — Detail" pattern and the content is comparing attributes or listing specifications, consider table layout.
 
 7. If bullets use pipe-delimited format ("Entity | Val1 | Val2 | Val3") with a header row, this is a comparison-matrix slide. The first bullet should contain column headers and remaining bullets are data rows.
+
+8. If bullets are prefixed with "PRO:" and "CON:" (or the content clearly presents benefits vs. challenges/risks), this is a pro-con slide.
 
 Return a JSON array with one object per slide:
 

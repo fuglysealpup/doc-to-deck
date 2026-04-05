@@ -10,7 +10,7 @@ export type SlideIntent =
   | 'structure'
   | 'closing';
 
-export type SlideLayout = 'hero' | 'split' | 'list' | 'cards' | 'quote' | 'timeline' | 'reference' | 'stat-hero' | 'table' | 'comparison-matrix';
+export type SlideLayout = 'hero' | 'split' | 'list' | 'cards' | 'quote' | 'timeline' | 'reference' | 'stat-hero' | 'table' | 'comparison-matrix' | 'pro-con';
 
 export interface Slide {
   slide_number: number;
