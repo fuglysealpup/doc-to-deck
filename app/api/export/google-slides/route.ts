@@ -121,15 +121,16 @@ function buildHeroSlide(slide: Slide, slideId: string, bg: string, accent: RGB, 
   reqs.push({ updateTextStyle: { objectId: `badge_${n}`, style: { fontSize: { magnitude: 10, unit: "PT" }, bold: true, foregroundColor: { opaqueColor: { rgbColor: accent } } }, textRange: { type: "ALL" }, fields: "fontSize,bold,foregroundColor" } });
   if (isClosing) reqs.push({ updateParagraphStyle: { objectId: `badge_${n}`, style: { alignment: "CENTER" }, textRange: { type: "ALL" }, fields: "alignment" } });
 
-  const hlY = isClosing ? 175 : 255;
-  const hlSize = isClosing ? 30 : 34;
-  reqs.push({ createShape: { objectId: `headline_${n}`, shapeType: "TEXT_BOX", elementProperties: { pageObjectId: slideId, size: { width: { magnitude: emu(CONTENT_W), unit: "EMU" }, height: { magnitude: emu(100), unit: "EMU" } }, transform: { scaleX: 1, scaleY: 1, translateX: emu(MARGIN_L), translateY: emu(hlY), unit: "EMU" } } } });
+  const hlY = isClosing ? 175 : 210;
+  const hlSize = isClosing ? 30 : 30;
+  const hlH = isClosing ? 100 : 120;
+  reqs.push({ createShape: { objectId: `headline_${n}`, shapeType: "TEXT_BOX", elementProperties: { pageObjectId: slideId, size: { width: { magnitude: emu(CONTENT_W), unit: "EMU" }, height: { magnitude: emu(hlH), unit: "EMU" } }, transform: { scaleX: 1, scaleY: 1, translateX: emu(MARGIN_L), translateY: emu(hlY), unit: "EMU" } } } });
   reqs.push({ insertText: { objectId: `headline_${n}`, text: slide.headline, insertionIndex: 0 } });
   reqs.push({ updateTextStyle: { objectId: `headline_${n}`, style: { bold: true, fontSize: { magnitude: hlSize, unit: "PT" }, foregroundColor: { opaqueColor: { rgbColor: rgbColor(dark) } } }, textRange: { type: "ALL" }, fields: "bold,fontSize,foregroundColor" } });
   if (isClosing) reqs.push({ updateParagraphStyle: { objectId: `headline_${n}`, style: { alignment: "CENTER" }, textRange: { type: "ALL" }, fields: "alignment" } });
 
   if (slide.subheadline) {
-    const subY = isClosing ? 280 : 340;
+    const subY = isClosing ? 280 : 350;
     reqs.push({ createShape: { objectId: `sub_${n}`, shapeType: "TEXT_BOX", elementProperties: { pageObjectId: slideId, size: { width: { magnitude: emu(CONTENT_W), unit: "EMU" }, height: { magnitude: emu(50), unit: "EMU" } }, transform: { scaleX: 1, scaleY: 1, translateX: emu(MARGIN_L), translateY: emu(subY), unit: "EMU" } } } });
     reqs.push({ insertText: { objectId: `sub_${n}`, text: slide.subheadline, insertionIndex: 0 } });
     reqs.push({ updateTextStyle: { objectId: `sub_${n}`, style: { fontSize: { magnitude: 15, unit: "PT" }, foregroundColor: { opaqueColor: { rgbColor: rgbColor(dark, true) } } }, textRange: { type: "ALL" }, fields: "fontSize,foregroundColor" } });
@@ -185,26 +186,26 @@ function buildStatHeroSlide(slide: Slide, slideId: string, accent: RGB, dark: bo
   const n = slide.slide_number;
   const stats = slide.bullets.slice(0, 3);
   const count = stats.length || 1;
-  const colW = Math.floor(CONTENT_W / count);
-  const statY = Math.max(nextY + 20, 210);
+  const gap = 15;
+  const colW = Math.floor((CONTENT_W - (count - 1) * gap) / count);
 
   stats.forEach((bullet, i) => {
     const parsed = parseBulletLeadIn(bullet);
     const statText = parsed ? parsed.lead : bullet;
     const labelText = parsed ? parsed.rest : "";
-    const x = MARGIN_L + i * colW + colW / 2 - 100;
+    const colX = MARGIN_L + i * (colW + gap);
 
     // Stat value
     const statId = `stat_${n}_${i}`;
-    reqs.push({ createShape: { objectId: statId, shapeType: "TEXT_BOX", elementProperties: { pageObjectId: slideId, size: { width: { magnitude: emu(200), unit: "EMU" }, height: { magnitude: emu(50), unit: "EMU" } }, transform: { scaleX: 1, scaleY: 1, translateX: emu(x), translateY: emu(statY), unit: "EMU" } } } });
+    reqs.push({ createShape: { objectId: statId, shapeType: "TEXT_BOX", elementProperties: { pageObjectId: slideId, size: { width: { magnitude: emu(colW), unit: "EMU" }, height: { magnitude: emu(50), unit: "EMU" } }, transform: { scaleX: 1, scaleY: 1, translateX: emu(colX), translateY: emu(210), unit: "EMU" } } } });
     reqs.push({ insertText: { objectId: statId, text: statText, insertionIndex: 0 } });
     reqs.push({ updateTextStyle: { objectId: statId, style: { bold: true, fontSize: { magnitude: 30, unit: "PT" }, foregroundColor: { opaqueColor: { rgbColor: accent } } }, textRange: { type: "ALL" }, fields: "bold,fontSize,foregroundColor" } });
     reqs.push({ updateParagraphStyle: { objectId: statId, style: { alignment: "CENTER" }, textRange: { type: "ALL" }, fields: "alignment" } });
 
-    // Label
+    // Description
     if (labelText) {
       const lblId = `statlbl_${n}_${i}`;
-      reqs.push({ createShape: { objectId: lblId, shapeType: "TEXT_BOX", elementProperties: { pageObjectId: slideId, size: { width: { magnitude: emu(200), unit: "EMU" }, height: { magnitude: emu(60), unit: "EMU" } }, transform: { scaleX: 1, scaleY: 1, translateX: emu(x), translateY: emu(statY + 52), unit: "EMU" } } } });
+      reqs.push({ createShape: { objectId: lblId, shapeType: "TEXT_BOX", elementProperties: { pageObjectId: slideId, size: { width: { magnitude: emu(colW), unit: "EMU" }, height: { magnitude: emu(60), unit: "EMU" } }, transform: { scaleX: 1, scaleY: 1, translateX: emu(colX), translateY: emu(270), unit: "EMU" } } } });
       reqs.push({ insertText: { objectId: lblId, text: labelText.toUpperCase(), insertionIndex: 0 } });
       reqs.push({ updateTextStyle: { objectId: lblId, style: { fontSize: { magnitude: 9, unit: "PT" }, foregroundColor: { opaqueColor: { rgbColor: rgbColor(dark, true) } } }, textRange: { type: "ALL" }, fields: "fontSize,foregroundColor" } });
       reqs.push({ updateParagraphStyle: { objectId: lblId, style: { alignment: "CENTER", lineSpacing: 120 }, textRange: { type: "ALL" }, fields: "alignment,lineSpacing" } });
@@ -294,7 +295,75 @@ function buildTableSlideShared(slide: Slide, slideId: string, accent: RGB, dark:
 }
 
 function buildTableSlide(slide: Slide, slideId: string, accent: RGB, dark: boolean): SlidesRequest[] {
-  return buildTableSlideShared(slide, slideId, accent, dark, false);
+  const hasPipe = slide.bullets.some(b => b.includes("|"));
+  if (hasPipe) {
+    return buildTableSlideShared(slide, slideId, accent, dark, false);
+  }
+
+  const hasEmDash = slide.bullets.some(b => b.includes(" — "));
+  if (!hasEmDash) {
+    // No pipe, no em-dash: fall back to pipe-delimited (will just be single-column)
+    return buildTableSlideShared(slide, slideId, accent, dark, false);
+  }
+
+  // Em-dash format: build a 2-column table (Metric | Detail)
+  const { reqs, nextY } = buildContentHeader(slide, slideId, accent, dark);
+  const n = slide.slide_number;
+  const tableId = `table_${n}`;
+
+  const dataRows = slide.bullets.map(b => {
+    const idx = b.indexOf(" — ");
+    if (idx === -1) return { col1: b.trim(), col2: "" };
+    return { col1: b.substring(0, idx).trim(), col2: b.substring(idx + 3).trim() };
+  });
+
+  const numCols = 2;
+  const numRows = dataRows.length + 1; // +1 for header
+  const tableH = Math.min(405 - nextY - 20, numRows * 32 + 10);
+
+  reqs.push({
+    createTable: {
+      objectId: tableId,
+      elementProperties: {
+        pageObjectId: slideId,
+        size: { width: { magnitude: emu(CONTENT_W), unit: "EMU" }, height: { magnitude: emu(tableH), unit: "EMU" } },
+        transform: { scaleX: 1, scaleY: 1, translateX: emu(MARGIN_L), translateY: emu(nextY + 5), unit: "EMU" },
+      },
+      rows: numRows,
+      columns: numCols,
+    },
+  });
+
+  // Header row
+  const headerTexts = ["Metric", "Detail"];
+  for (let ci = 0; ci < numCols; ci++) {
+    reqs.push({ insertText: { objectId: tableId, text: headerTexts[ci], cellLocation: { rowIndex: 0, columnIndex: ci }, insertionIndex: 0 } });
+    reqs.push({ updateTextStyle: { objectId: tableId, style: { bold: true, fontSize: { magnitude: 9, unit: "PT" }, foregroundColor: { opaqueColor: { rgbColor: { red: 1, green: 1, blue: 1 } } } }, textRange: { type: "ALL" }, cellLocation: { rowIndex: 0, columnIndex: ci }, fields: "bold,fontSize,foregroundColor" } });
+    reqs.push({ updateTableCellProperties: { objectId: tableId, tableRange: { location: { rowIndex: 0, columnIndex: ci }, rowSpan: 1, columnSpan: 1 }, tableCellProperties: { tableCellBackgroundFill: { solidFill: { color: { rgbColor: accent } } } }, fields: "tableCellBackgroundFill.solidFill.color" } });
+  }
+
+  // Data rows
+  dataRows.forEach((row, ri) => {
+    const rowIdx = ri + 1;
+    // Column 1 (bold)
+    reqs.push({ insertText: { objectId: tableId, text: row.col1, cellLocation: { rowIndex: rowIdx, columnIndex: 0 }, insertionIndex: 0 } });
+    reqs.push({ updateTextStyle: { objectId: tableId, style: { bold: true, fontSize: { magnitude: 10, unit: "PT" }, foregroundColor: { opaqueColor: { rgbColor: rgbColor(dark) } } }, textRange: { type: "ALL" }, cellLocation: { rowIndex: rowIdx, columnIndex: 0 }, fields: "bold,fontSize,foregroundColor" } });
+
+    // Column 2
+    if (row.col2) {
+      reqs.push({ insertText: { objectId: tableId, text: row.col2, cellLocation: { rowIndex: rowIdx, columnIndex: 1 }, insertionIndex: 0 } });
+      reqs.push({ updateTextStyle: { objectId: tableId, style: { fontSize: { magnitude: 10, unit: "PT" }, foregroundColor: { opaqueColor: { rgbColor: rgbColor(dark, true) } } }, textRange: { type: "ALL" }, cellLocation: { rowIndex: rowIdx, columnIndex: 1 }, fields: "fontSize,foregroundColor" } });
+    }
+
+    // Alternating row tint
+    if (ri % 2 === 1) {
+      for (let ci = 0; ci < numCols; ci++) {
+        reqs.push({ updateTableCellProperties: { objectId: tableId, tableRange: { location: { rowIndex: rowIdx, columnIndex: ci }, rowSpan: 1, columnSpan: 1 }, tableCellProperties: { tableCellBackgroundFill: { solidFill: { color: { rgbColor: { red: 0.97, green: 0.97, blue: 0.97 } } } } }, fields: "tableCellBackgroundFill.solidFill.color" } });
+      }
+    }
+  });
+
+  return reqs;
 }
 
 function buildComparisonMatrixSlide(slide: Slide, slideId: string, accent: RGB, dark: boolean): SlidesRequest[] {

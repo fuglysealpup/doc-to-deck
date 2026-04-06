@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DeckResponse, Slide } from "@/src/types/deck";
+import { DeckResponse, Slide, SlideLayout } from "@/src/types/deck";
 import SlideRenderer from "@/src/components/SlideRenderer";
 import { useTheme } from "@/src/lib/themeContext";
 
@@ -89,7 +89,9 @@ export default function Home() {
         setResult(deck);
         sessionStorage.removeItem("deck_for_export");
         sessionStorage.removeItem("theme_for_export");
-        doExport(deck);
+        // Delay export slightly so the user sees the deck restored
+        // and the auth cookie is fully set
+        setTimeout(() => doExport(deck), 800);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

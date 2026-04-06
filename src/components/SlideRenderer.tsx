@@ -274,7 +274,7 @@ export default function SlideRenderer({ deck, onUpdateSlide }: SlideRendererProp
       <div className="flex flex-col gap-2.5">
         {deck.slides.map((slide) => {
           const layoutName = getLayoutForSlide(slide);
-          const LayoutComponent = layoutComponentMap[layoutName];
+          const LayoutComponent = layoutComponentMap[layoutName] || layoutComponentMap['list'];
           const isEditing = editingSlide === slide.slide_number;
 
           return (
