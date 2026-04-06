@@ -69,16 +69,7 @@ If the document doesn't clearly match a type, default to matching the tone and s
 - When the source document presents benefits alongside challenges, risks alongside advantages, or pros alongside cons for a single option or decision, prefix each bullet with PRO: or CON: to indicate which category it belongs to. Example: "PRO: Lower implementation cost and faster rollout timeline" and "CON: Requires retraining all existing staff on the new platform" and "PRO: Compatible with current infrastructure and vendor contracts" and "CON: Higher long-term maintenance costs compared to alternatives". This structured format enables the pro-con layout in the design step. Only use this format when the source document explicitly presents both sides of an evaluation. Do not fabricate cons that aren't in the source document.
 
 **Section divider rule:**
-SECTION DIVIDERS ARE MANDATORY for decks with 8+ content slides. Insert a structure-type slide at EVERY major narrative transition. A major narrative transition is when the document shifts from one topic area to another — for example, from performance metrics to team health, from analysis to recommendations, or from current state to future plan.
-
-Structure-type divider slides must have:
-- type: "structure"
-- headline: the section name (e.g., "Team Health & Retention", "Technology Investments", "Strategic Plan for 2026")
-- subheadline: optional one-line preview of the section
-- bullets: empty array []
-- speaker_note: "Section divider"
-
-A deck with 10-12 content slides should have at least 2-3 dividers. A deck with 15+ slides should have at least 3-4 dividers. Err on the side of MORE dividers, not fewer. They cost nothing and dramatically improve audience comprehension in dense presentations.
+- For decks with 8+ content slides, consider inserting structure-type slides as section dividers when the document has clear topic shifts (e.g., from analysis to recommendations, from current state to future plan). Use your judgment — dividers help with cognitive pacing in dense presentations but aren't always needed. When you do insert them, use type "structure", a short headline naming the section, an optional subheadline, an empty bullets array, and speaker_note "Section divider".
 
 **Data visualization hints:**
 - When a slide presents a formula or chain of reasoning (e.g., market size × fee = revenue, or investment → activity → return), note in the speaker_note that this benefits from a connected-stat-chain visualization: numbers linked by arrows showing the calculation, not independent stat callouts.
