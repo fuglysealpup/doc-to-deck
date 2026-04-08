@@ -1,5 +1,6 @@
 import { Slide, SlideLayout, SlideIntent, Theme } from '@/src/types/deck';
 import { LayoutSpec } from '../layoutSpec';
+import { FontTier } from './textMeasure';
 import { heroLayoutSpec } from './heroLayout';
 import { splitLayoutSpec } from './splitLayout';
 import { cardsLayoutSpec } from './cardsLayout';
@@ -13,7 +14,9 @@ import { comparisonMatrixLayoutSpec } from './comparisonMatrixLayout';
 import { proConLayoutSpec } from './proConLayout';
 import { dividerLayoutSpec } from './dividerLayout';
 
-const layoutSpecMap: Record<string, (slide: Slide, theme: Theme, totalSlides: number) => LayoutSpec> = {
+export type LayoutSpecFn = (slide: Slide, theme: Theme, totalSlides: number, forceTier?: FontTier) => LayoutSpec;
+
+const layoutSpecMap: Record<string, LayoutSpecFn> = {
   'hero': heroLayoutSpec,
   'split': splitLayoutSpec,
   'cards': cardsLayoutSpec,
@@ -41,8 +44,10 @@ const defaultIntentLayout: Record<SlideIntent, SlideLayout> = {
   closing: 'hero',
 };
 
-export function getLayoutSpec(slide: Slide, theme: Theme, totalSlides: number): LayoutSpec {
+export function getLayoutSpec(
+  slide: Slide, theme: Theme, totalSlides: number, forceTier?: FontTier
+): LayoutSpec {
   const layout = slide.layout || defaultIntentLayout[slide.type] || 'list';
   const specFn = layoutSpecMap[layout] || layoutSpecMap['list'];
-  return specFn(slide, theme, totalSlides);
+  return specFn(slide, theme, totalSlides, forceTier);
 }

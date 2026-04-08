@@ -2,12 +2,13 @@ import { Slide, Theme } from '@/src/types/deck';
 import { LayoutSpec, LayoutElement, MARGIN_L, MARGIN_B, CONTENT_W } from '../layoutSpec';
 import { TableData, TableRow, TableCell } from '../layoutSpec';
 import { commonHeader, counterElement, parseBulletLeadIn } from './common';
+import { FontTier } from './textMeasure';
 
-export function tableLayoutSpec(slide: Slide, theme: Theme, totalSlides: number): LayoutSpec {
+export function tableLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, forceTier?: FontTier): LayoutSpec {
   const n = slide.slide_number;
   const bg = theme.backgrounds[slide.type];
   const accent = theme.accents[slide.type];
-  const { elements, nextY } = commonHeader(slide, theme);
+  const { elements, nextY } = commonHeader(slide, theme, undefined, forceTier);
 
   const hasPipe = slide.bullets.some(b => b.includes('|'));
   let tableData: TableData;

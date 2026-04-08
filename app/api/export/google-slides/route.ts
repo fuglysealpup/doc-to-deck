@@ -4,6 +4,9 @@ import { Slide, Theme } from "@/src/types/deck";
 import { themes } from "@/src/themes";
 import { getLayoutSpec } from "@/src/lib/layouts";
 import { LayoutElement } from "@/src/lib/layoutSpec";
+import { checkSlideRendering, fetchSlideThumbnails } from "@/src/lib/slideChecker";
+import { remediateSlide } from "@/src/lib/slideRemediation";
+import { FontTier } from "@/src/lib/layouts/textMeasure";
 
 interface ExportRequest {
   title: string;
@@ -462,6 +465,93 @@ export async function POST(request: NextRequest) {
     if (!batchRes.ok) {
       const err = await batchRes.text();
       return NextResponse.json({ error: `Failed to build slides: ${err}` }, { status: 502 });
+    }
+
+    // ─── VISUAL QUALITY CHECK LOOP (max 2 iterations) ───
+    let currentSlides = [...processedSlides];
+    const MAX_CHECK_ITERATIONS = 2;
+
+    for (let iteration = 0; iteration < MAX_CHECK_ITERATIONS; iteration++) {
+      try {
+        const thumbnails = await fetchSlideThumbnails(presentationId, accessToken);
+        if (thumbnails.length === 0) break;
+
+        const checkResults = await Promise.all(
+          thumbnails.map((thumb, i) => {
+            const slide = currentSlides[i];
+            if (!slide) return Promise.resolve({ slideIndex: i, pass: true, issues: [] });
+            return checkSlideRendering(thumb.imageBase64, i, {
+              headline: slide.headline,
+              bulletCount: slide.bullets.length,
+              layout: slide.layout || 'list',
+            });
+          })
+        );
+
+        const failedSlides = checkResults.filter(r => !r.pass);
+        if (failedSlides.length === 0) break;
+        if (iteration === MAX_CHECK_ITERATIONS - 1) break;
+
+        // Remediate and re-export failed slides
+        const reExportRequests: SlidesRequest[] = [];
+
+        for (const failed of failedSlides) {
+          const slide = currentSlides[failed.slideIndex];
+          if (!slide) continue;
+
+          const remediated = await remediateSlide(slide, failed.issues);
+          currentSlides[failed.slideIndex] = remediated.slide;
+
+          const oldSlideId = `slide_${slide.slide_number}`;
+          const newSlideId = `slide_${slide.slide_number}_v${iteration + 1}`;
+          const ft = remediated.forceTier as FontTier | undefined;
+
+          // Delete old slide
+          reExportRequests.push({ deleteObject: { objectId: oldSlideId } });
+
+          // Create new slide at the same position
+          reExportRequests.push({
+            createSlide: {
+              objectId: newSlideId,
+              insertionIndex: failed.slideIndex,
+              slideLayoutReference: { predefinedLayout: "BLANK" },
+            },
+          });
+
+          const spec = getLayoutSpec(remediated.slide, activeTheme, currentSlides.length, ft || undefined);
+
+          reExportRequests.push({
+            updatePageProperties: {
+              objectId: newSlideId,
+              pageProperties: { pageBackgroundFill: { solidFill: { color: { rgbColor: hexToRgb(spec.background) } } } },
+              fields: "pageBackgroundFill.solidFill.color",
+            },
+          });
+
+          for (const element of spec.elements) {
+            // Prefix element IDs with version to avoid collisions
+            const vElement = { ...element, id: `${element.id}_v${iteration + 1}` };
+            if (vElement.children) {
+              vElement.children = vElement.children.map(c => ({ ...c, id: `${c.id}_v${iteration + 1}` }));
+            }
+            switch (vElement.type) {
+              case 'text': reExportRequests.push(...specTextToSlides(vElement, newSlideId)); break;
+              case 'shape': reExportRequests.push(...specShapeToSlides(vElement, newSlideId)); break;
+              case 'table': reExportRequests.push(...specTableToSlides(vElement, newSlideId)); break;
+            }
+          }
+        }
+
+        if (reExportRequests.length > 0) {
+          const reRes = await fetch(
+            `https://slides.googleapis.com/v1/presentations/${presentationId}:batchUpdate`,
+            { method: "POST", headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }, body: JSON.stringify({ requests: reExportRequests }) }
+          );
+          if (!reRes.ok) break; // If re-export fails, accept what we have
+        }
+      } catch {
+        break; // If any check step fails, accept current state
+      }
     }
 
     return NextResponse.json({ url: `https://docs.google.com/presentation/d/${presentationId}/edit` });

@@ -1,20 +1,20 @@
 import { Slide, Theme } from '@/src/types/deck';
 import { LayoutSpec, MARGIN_L, MARGIN_B, CONTENT_W } from '../layoutSpec';
 import { commonHeader, counterElement } from './common';
-import { estimateTextHeight, determineFontTier, FONT_TIERS } from './textMeasure';
+import { estimateTextHeight, determineFontTier, FONT_TIERS, FontTier } from './textMeasure';
 
-export function referenceLayoutSpec(slide: Slide, theme: Theme, totalSlides: number): LayoutSpec {
+export function referenceLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, forceTier?: FontTier): LayoutSpec {
   const n = slide.slide_number;
   const bg = theme.backgrounds[slide.type];
   const accent = theme.accents[slide.type];
-  const { elements, nextY, tier: headerTier } = commonHeader(slide, theme);
+  const { elements, nextY, tier: headerTier } = commonHeader(slide, theme, undefined, forceTier);
   const textW = CONTENT_W - 16;
   const availH = 405 - MARGIN_B - nextY;
 
   let bodyFont = FONT_TIERS.standard.body;
   const stdHeights = slide.bullets.map(b => estimateTextHeight(b, bodyFont, textW, 1.5));
   const stdTotal = stdHeights.reduce((s, h) => s + h, 0);
-  const tier = determineFontTier(stdTotal, availH);
+  const tier = forceTier || determineFontTier(stdTotal, availH);
   if (tier !== 'standard') bodyFont = FONT_TIERS.compact.body;
 
   let currentY = nextY;

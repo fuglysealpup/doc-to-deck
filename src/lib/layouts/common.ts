@@ -13,6 +13,7 @@ export function commonHeader(
   slide: Slide,
   theme: Theme,
   headlineWidth: number = CONTENT_W,
+  forceTier?: FontTier,
 ): { elements: LayoutElement[]; nextY: number; tier: FontTier } {
   const n = slide.slide_number;
   const accent = theme.accents[slide.type];
@@ -43,17 +44,19 @@ export function commonHeader(
   });
   currentY += 20 + 12; // badge height + gap
 
-  // Headline — check if it needs compact tier
-  let headlineFontSize = FONT_TIERS.standard.headline;
-  let headlineH = estimateTextHeight(slide.headline, headlineFontSize, headlineWidth, 1.3);
-  const headlineLines = estimateLines(slide.headline, headlineFontSize, headlineWidth);
-  let tier: FontTier = 'standard';
+  // Headline — use forced tier or auto-detect
+  let tier: FontTier = forceTier || 'standard';
+  let headlineFontSize = FONT_TIERS[tier === 'overflow' ? 'compact' : tier].headline;
 
-  if (headlineLines > 3) {
-    headlineFontSize = FONT_TIERS.compact.headline;
-    headlineH = estimateTextHeight(slide.headline, headlineFontSize, headlineWidth, 1.3);
-    tier = 'compact';
+  if (!forceTier) {
+    const headlineLines = estimateLines(slide.headline, headlineFontSize, headlineWidth);
+    if (headlineLines > 3) {
+      headlineFontSize = FONT_TIERS.compact.headline;
+      tier = 'compact';
+    }
   }
+
+  let headlineH = estimateTextHeight(slide.headline, headlineFontSize, headlineWidth, 1.3);
 
   elements.push({
     id: `headline_${n}`, type: 'text',

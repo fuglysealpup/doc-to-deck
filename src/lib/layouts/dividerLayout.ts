@@ -1,8 +1,9 @@
 import { Slide, Theme } from '@/src/types/deck';
 import { LayoutSpec, LayoutElement } from '../layoutSpec';
+import { FontTier } from './textMeasure';
 
 // Matches DividerLayout.tsx: accent gradient bg, centered white text
-export function dividerLayoutSpec(slide: Slide, theme: Theme, totalSlides: number): LayoutSpec {
+export function dividerLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, forceTier?: FontTier): LayoutSpec {
   const n = slide.slide_number;
   const accent = theme.accents[slide.type];
   const elements: LayoutElement[] = [];

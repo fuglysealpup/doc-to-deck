@@ -1,13 +1,13 @@
 import { Slide, Theme } from '@/src/types/deck';
 import { LayoutSpec, MARGIN_L, MARGIN_B, CONTENT_W } from '../layoutSpec';
 import { commonHeader, counterElement, parseBulletLeadIn } from './common';
-import { estimateTextHeight, FONT_TIERS } from './textMeasure';
+import { estimateTextHeight, FONT_TIERS, FontTier } from './textMeasure';
 
-export function statHeroLayoutSpec(slide: Slide, theme: Theme, totalSlides: number): LayoutSpec {
+export function statHeroLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, forceTier?: FontTier): LayoutSpec {
   const n = slide.slide_number;
   const bg = theme.backgrounds[slide.type];
   const accent = theme.accents[slide.type];
-  const { elements, nextY } = commonHeader(slide, theme);
+  const { elements, nextY } = commonHeader(slide, theme, undefined, forceTier);
   const stats = slide.bullets.slice(0, 3);
   const count = stats.length || 1;
   const gap = 24;

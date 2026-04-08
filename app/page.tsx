@@ -87,11 +87,13 @@ export default function Home() {
         didAutoExport.current = true;
         const deck: DeckResponse = JSON.parse(savedDeck);
         setResult(deck);
-        sessionStorage.removeItem("deck_for_export");
-        sessionStorage.removeItem("theme_for_export");
-        // Delay export slightly so the user sees the deck restored
-        // and the auth cookie is fully set
-        setTimeout(() => doExport(deck), 800);
+        // Keep sessionStorage until export succeeds — doExport will
+        // re-save if it needs to redirect again. Clean up after export.
+        setTimeout(async () => {
+          await doExport(deck);
+          sessionStorage.removeItem("deck_for_export");
+          sessionStorage.removeItem("theme_for_export");
+        }, 1500);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

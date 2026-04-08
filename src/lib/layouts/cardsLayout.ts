@@ -1,12 +1,12 @@
 import { Slide, Theme } from '@/src/types/deck';
 import { LayoutSpec, MARGIN_L, MARGIN_B, CONTENT_W } from '../layoutSpec';
 import { commonHeader, counterElement, parseBulletLeadIn } from './common';
-import { estimateCardHeight, determineFontTier, FONT_TIERS } from './textMeasure';
+import { estimateCardHeight, determineFontTier, FONT_TIERS, FontTier } from './textMeasure';
 
-export function cardsLayoutSpec(slide: Slide, theme: Theme, totalSlides: number): LayoutSpec {
+export function cardsLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, forceTier?: FontTier): LayoutSpec {
   const n = slide.slide_number;
   const bg = theme.backgrounds[slide.type];
-  const { elements, nextY, tier: headerTier } = commonHeader(slide, theme);
+  const { elements, nextY, tier: headerTier } = commonHeader(slide, theme, undefined, forceTier);
 
   const cards = slide.bullets.slice(0, 6);
   const cols = cards.length <= 3 ? cards.length : Math.ceil(cards.length / 2);
@@ -23,7 +23,7 @@ export function cardsLayoutSpec(slide: Slide, theme: Theme, totalSlides: number)
     return Math.max(...rowCards.map((b) => estimateCardHeight(b, bodyFont, cardW)));
   });
   const stdTotal = maxStdRowH.reduce((s, h) => s + h, 0) + (rows - 1) * gap;
-  const tier = determineFontTier(stdTotal, availH);
+  const tier = forceTier || determineFontTier(stdTotal, availH);
 
   if (tier !== 'standard') bodyFont = FONT_TIERS.compact.body;
 

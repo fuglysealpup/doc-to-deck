@@ -1,13 +1,13 @@
 import { Slide, Theme } from '@/src/types/deck';
 import { LayoutSpec, MARGIN_L, MARGIN_B, CONTENT_W } from '../layoutSpec';
 import { commonHeader, counterElement, parseBulletLeadIn } from './common';
-import { estimateTextHeight, estimateBulletListHeight, determineFontTier, FONT_TIERS } from './textMeasure';
+import { estimateTextHeight, estimateBulletListHeight, determineFontTier, FONT_TIERS, FontTier } from './textMeasure';
 
-export function listLayoutSpec(slide: Slide, theme: Theme, totalSlides: number): LayoutSpec {
+export function listLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, forceTier?: FontTier): LayoutSpec {
   const n = slide.slide_number;
   const bg = theme.backgrounds[slide.type];
   const accent = theme.accents[slide.type];
-  const { elements, nextY, tier: headerTier } = commonHeader(slide, theme);
+  const { elements, nextY, tier: headerTier } = commonHeader(slide, theme, undefined, forceTier);
 
   const availH = 405 - MARGIN_B - nextY;
   const textW = CONTENT_W - 18; // dot + gap
@@ -15,7 +15,7 @@ export function listLayoutSpec(slide: Slide, theme: Theme, totalSlides: number):
   // Measure at standard tier
   let bodyFont = FONT_TIERS.standard.body;
   const stdH = estimateBulletListHeight(slide.bullets, bodyFont + 1, textW, 1.6, 16); // +1 for list's 14pt
-  const tier = determineFontTier(stdH, availH);
+  const tier = forceTier || determineFontTier(stdH, availH);
   if (tier !== 'standard') bodyFont = FONT_TIERS.compact.body;
 
   let currentY = nextY;

@@ -1,7 +1,7 @@
 import { Slide, Theme } from '@/src/types/deck';
 import { LayoutSpec, MARGIN_L, MARGIN_B, CONTENT_W } from '../layoutSpec';
 import { commonHeader, counterElement, parseBulletLeadIn } from './common';
-import { estimateTextHeight, determineFontTier, FONT_TIERS } from './textMeasure';
+import { estimateTextHeight, determineFontTier, FONT_TIERS, FontTier } from './textMeasure';
 
 function parseTimeLabel(bullet: string): { label: string; text: string } {
   const match = bullet.match(
@@ -10,12 +10,12 @@ function parseTimeLabel(bullet: string): { label: string; text: string } {
   return match ? { label: match[1].trim(), text: match[2].trim() } : { label: '', text: bullet };
 }
 
-export function timelineLayoutSpec(slide: Slide, theme: Theme, totalSlides: number): LayoutSpec {
+export function timelineLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, forceTier?: FontTier): LayoutSpec {
   const n = slide.slide_number;
   const bg = theme.backgrounds[slide.type];
   const accent = theme.accents[slide.type];
   const borderColor = theme.decorative.cardBorder.replace(/^[\d.]+px\s+solid\s+/, '');
-  const { elements, nextY, tier: headerTier } = commonHeader(slide, theme);
+  const { elements, nextY, tier: headerTier } = commonHeader(slide, theme, undefined, forceTier);
   const labelW = 90;
   const gap = 14;
   const textW = CONTENT_W - labelW - gap;
@@ -26,7 +26,7 @@ export function timelineLayoutSpec(slide: Slide, theme: Theme, totalSlides: numb
   const rowTexts = slide.bullets.map(b => parseTimeLabel(b).text);
   const stdHeights = rowTexts.map(t => Math.max(24, estimateTextHeight(t, bodyFont, textW, 1.5)));
   const stdTotal = stdHeights.reduce((s, h) => s + h, 0) + Math.max(0, slide.bullets.length - 1) * 4;
-  const tier = determineFontTier(stdTotal, availH);
+  const tier = forceTier || determineFontTier(stdTotal, availH);
   if (tier !== 'standard') bodyFont = FONT_TIERS.compact.body;
 
   const rowHeights = rowTexts.map(t => Math.max(22, estimateTextHeight(t, bodyFont, textW, 1.5)));

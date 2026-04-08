@@ -2,6 +2,7 @@ import { Slide, Theme } from '@/src/types/deck';
 import { LayoutSpec, MARGIN_L, MARGIN_B, CONTENT_W } from '../layoutSpec';
 import { TableData, TableRow, TableCell } from '../layoutSpec';
 import { commonHeader, counterElement } from './common';
+import { FontTier } from './textMeasure';
 
 function cellColor(val: string): string | undefined {
   const v = val.trim().toLowerCase();
@@ -17,13 +18,13 @@ function cellDisplay(val: string): string {
   return val.trim();
 }
 
-export function comparisonMatrixLayoutSpec(slide: Slide, theme: Theme, totalSlides: number): LayoutSpec {
+export function comparisonMatrixLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, forceTier?: FontTier): LayoutSpec {
   const n = slide.slide_number;
   const bg = theme.backgrounds[slide.type];
   const accent = theme.accents[slide.type];
   // Tighter padding matching ComparisonMatrixLayout.tsx: 36px 48px
-  const elements = commonHeader(slide, theme).elements;
-  const nextY = commonHeader(slide, theme).nextY;
+  const elements = commonHeader(slide, theme, undefined, forceTier).elements;
+  const nextY = commonHeader(slide, theme, undefined, forceTier).nextY;
 
   const headerParts = slide.bullets.length > 0
     ? slide.bullets[0].split('|').map(s => s.trim()).filter(Boolean)

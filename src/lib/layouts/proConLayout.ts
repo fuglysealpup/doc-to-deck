@@ -1,15 +1,15 @@
 import { Slide, Theme } from '@/src/types/deck';
 import { LayoutSpec, MARGIN_L, MARGIN_B, CONTENT_W } from '../layoutSpec';
 import { commonHeader, counterElement } from './common';
-import { estimateBulletListHeight, determineFontTier, FONT_TIERS } from './textMeasure';
+import { estimateBulletListHeight, determineFontTier, FONT_TIERS, FontTier } from './textMeasure';
 
 const PRO_COLOR = '#1a7a4c';
 const CON_COLOR = '#b45309';
 
-export function proConLayoutSpec(slide: Slide, theme: Theme, totalSlides: number): LayoutSpec {
+export function proConLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, forceTier?: FontTier): LayoutSpec {
   const n = slide.slide_number;
   const bg = theme.backgrounds[slide.type];
-  const { elements, nextY, tier: headerTier } = commonHeader(slide, theme);
+  const { elements, nextY, tier: headerTier } = commonHeader(slide, theme, undefined, forceTier);
 
   const pros: string[] = [];
   const cons: string[] = [];
@@ -32,7 +32,7 @@ export function proConLayoutSpec(slide: Slide, theme: Theme, totalSlides: number
   const proH = estimateBulletListHeight(pros.map(p => `✓  ${p}`), bodyFont - 1, textW, 1.5, 10);
   const conH = estimateBulletListHeight(cons.map(c => `⚠  ${c}`), bodyFont - 1, textW, 1.5, 10);
   const tallest = Math.max(proH, conH) + 50; // header + padding
-  const tier = determineFontTier(tallest, availH);
+  const tier = forceTier || determineFontTier(tallest, availH);
   if (tier !== 'standard') bodyFont = FONT_TIERS.compact.body;
 
   const colH = availH;

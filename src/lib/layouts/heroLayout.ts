@@ -1,6 +1,6 @@
 import { Slide, Theme } from '@/src/types/deck';
 import { LayoutSpec, LayoutElement, CONTENT_W } from '../layoutSpec';
-import { estimateTextHeight, estimateLines, estimateBadgeWidth } from './textMeasure';
+import { estimateTextHeight, estimateLines, estimateBadgeWidth, FontTier } from './textMeasure';
 
 const PAD_V = 56;
 const PAD_H = 64;
@@ -11,7 +11,7 @@ function isColorDark(hex: string): boolean {
   return parseInt(h.substring(0, 2), 16) + parseInt(h.substring(2, 4), 16) + parseInt(h.substring(4, 6), 16) < 384;
 }
 
-export function heroLayoutSpec(slide: Slide, theme: Theme, totalSlides: number): LayoutSpec {
+export function heroLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, forceTier?: FontTier): LayoutSpec {
   const n = slide.slide_number;
   const bg = theme.backgrounds[slide.type];
   const accent = theme.accents[slide.type];

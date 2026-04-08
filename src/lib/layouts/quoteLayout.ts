@@ -1,8 +1,8 @@
 import { Slide, Theme } from '@/src/types/deck';
 import { LayoutSpec, LayoutElement, CONTENT_W, MARGIN_L } from '../layoutSpec';
-import { estimateTextHeight, estimateBadgeWidth } from './textMeasure';
+import { estimateTextHeight, estimateBadgeWidth, FontTier } from './textMeasure';
 
-export function quoteLayoutSpec(slide: Slide, theme: Theme, totalSlides: number): LayoutSpec {
+export function quoteLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, forceTier?: FontTier): LayoutSpec {
   const n = slide.slide_number;
   const bg = theme.backgrounds[slide.type];
   const badge = theme.badges[slide.type];

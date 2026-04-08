@@ -1,11 +1,11 @@
 import { Slide, Theme } from '@/src/types/deck';
 import { LayoutSpec, LayoutElement, MARGIN_L, MARGIN_T, MARGIN_B, CONTENT_W } from '../layoutSpec';
 import { parseBulletLeadIn, counterElement } from './common';
-import { estimateTextHeight, estimateLines, estimateCardHeight, estimateBadgeWidth, determineFontTier, FONT_TIERS } from './textMeasure';
+import { estimateTextHeight, estimateLines, estimateCardHeight, estimateBadgeWidth, determineFontTier, FONT_TIERS, FontTier } from './textMeasure';
 
 const GAP = 36;
 
-export function splitLayoutSpec(slide: Slide, theme: Theme, totalSlides: number): LayoutSpec {
+export function splitLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, forceTier?: FontTier): LayoutSpec {
   const n = slide.slide_number;
   const bg = theme.backgrounds[slide.type];
   const accent = theme.accents[slide.type];
@@ -68,7 +68,8 @@ export function splitLayoutSpec(slide: Slide, theme: Theme, totalSlides: number)
   let bodyFont = FONT_TIERS.standard.body;
   const standardHeights = slide.bullets.map(b => estimateCardHeight(b, bodyFont, rightW));
   const standardTotal = standardHeights.reduce((s, h) => s + h, 0) + Math.max(0, cardCount - 1) * cardGap;
-  const tier = determineFontTier(standardTotal, availH);
+  if (forceTier) { bodyFont = FONT_TIERS[forceTier === 'overflow' ? 'compact' : forceTier].body; }
+  const tier = forceTier || determineFontTier(standardTotal, availH);
 
   if (tier !== 'standard') bodyFont = FONT_TIERS.compact.body;
   const cardHeights = slide.bullets.map(b => estimateCardHeight(b, bodyFont, rightW));
