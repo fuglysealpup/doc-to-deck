@@ -61,4 +61,5 @@ export interface TableCell {
 export interface LayoutSpec {
   elements: LayoutElement[];
   background: string;
+  fit: 'ok' | 'compact' | 'overflow';
 }

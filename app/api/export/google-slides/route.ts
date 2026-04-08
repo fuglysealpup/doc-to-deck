@@ -1,8 +1,9 @@
+import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
-import { Slide } from "@/src/types/deck";
+import { Slide, Theme } from "@/src/types/deck";
 import { themes } from "@/src/themes";
 import { getLayoutSpec } from "@/src/lib/layouts";
-import { LayoutElement, LayoutSpec } from "@/src/lib/layoutSpec";
+import { LayoutElement } from "@/src/lib/layoutSpec";
 
 interface ExportRequest {
   title: string;
@@ -313,6 +314,65 @@ function specTableToSlides(el: LayoutElement, slideId: string): SlidesRequest[] 
   return reqs;
 }
 
+// ─── CONTENT CONDENSATION ───
+
+function getMaxBulletsForLayout(layout: string): number {
+  switch (layout) {
+    case 'split': return 4;
+    case 'cards': return 4;
+    case 'stat-hero': return 3;
+    case 'pro-con': return 8;
+    case 'list': return 6;
+    case 'timeline': return 5;
+    case 'table': return 8;
+    case 'comparison-matrix': return 6;
+    default: return 5;
+  }
+}
+
+const anthropic = new Anthropic();
+
+async function condenseSlideContent(slide: Slide, theme: Theme, totalSlides: number): Promise<Slide> {
+  const spec = getLayoutSpec(slide, theme, totalSlides);
+  if (spec.fit !== 'overflow') return slide;
+
+  const layout = slide.layout || 'list';
+  const maxBullets = getMaxBulletsForLayout(layout);
+  if (slide.bullets.length <= maxBullets) return slide;
+
+  try {
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{
+        role: 'user',
+        content: `You are a presentation editor. This slide has too much content to fit its layout.
+
+Layout type: ${layout}
+Current headline: ${slide.headline}
+Current bullets (${slide.bullets.length} items):
+${slide.bullets.map((b, i) => `${i + 1}. ${b}`).join('\n')}
+
+Condense to ${maxBullets} bullets maximum. Rules:
+- Preserve the most important information
+- Combine related points into single stronger statements
+- Keep each bullet under 80 characters if possible
+- Do NOT change the headline
+- For PRO:/CON: prefixed bullets, maintain the prefix and keep the ratio balanced
+- Maintain the " — " (em dash) format if the original bullets use it
+
+Return ONLY a JSON object: {"bullets": ["bullet 1", "bullet 2", ...]}`,
+      }],
+    });
+
+    const text = response.content[0].type === 'text' ? response.content[0].text : '';
+    const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+    return { ...slide, bullets: parsed.bullets };
+  } catch {
+    return slide; // if condensation fails, use original
+  }
+}
+
 // ─── MAIN EXPORT HANDLER ───
 export async function POST(request: NextRequest) {
   const accessToken = request.cookies.get("google_access_token")?.value;
@@ -352,9 +412,14 @@ export async function POST(request: NextRequest) {
     const defaultSlideId = presentation.slides?.[0]?.objectId;
     const requests: SlidesRequest[] = [];
 
-    for (const slide of slides) {
+    // Condense overflowing slides before building specs
+    const processedSlides = await Promise.all(
+      slides.map(slide => condenseSlideContent(slide, activeTheme, slides.length))
+    );
+
+    for (const slide of processedSlides) {
       const slideId = `slide_${slide.slide_number}`;
-      const spec = getLayoutSpec(slide, activeTheme, slides.length);
+      const spec = getLayoutSpec(slide, activeTheme, processedSlides.length);
 
       // Create slide
       requests.push({ createSlide: { objectId: slideId, slideLayoutReference: { predefinedLayout: "BLANK" } } });

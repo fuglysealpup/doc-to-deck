@@ -1,40 +1,44 @@
 import { Slide, Theme } from '@/src/types/deck';
 import { LayoutSpec, MARGIN_L, MARGIN_B, CONTENT_W } from '../layoutSpec';
 import { commonHeader, counterElement, parseBulletLeadIn } from './common';
+import { estimateTextHeight, estimateBulletListHeight, determineFontTier, FONT_TIERS } from './textMeasure';
 
 export function listLayoutSpec(slide: Slide, theme: Theme, totalSlides: number): LayoutSpec {
   const n = slide.slide_number;
   const bg = theme.backgrounds[slide.type];
   const accent = theme.accents[slide.type];
-  const { elements, nextY } = commonHeader(slide, theme);
+  const { elements, nextY, tier: headerTier } = commonHeader(slide, theme);
 
-  // Bullets as list with colored dots — matches ListLayout.tsx gap-4
-  const itemGap = 16;
-  const availH = 405 - nextY - MARGIN_B;
-  const itemCount = slide.bullets.length;
-  const itemH = itemCount > 0 ? Math.min(30, Math.floor((availH - (itemCount - 1) * itemGap) / itemCount)) : 24;
+  const availH = 405 - MARGIN_B - nextY;
+  const textW = CONTENT_W - 18; // dot + gap
 
+  // Measure at standard tier
+  let bodyFont = FONT_TIERS.standard.body;
+  const stdH = estimateBulletListHeight(slide.bullets, bodyFont + 1, textW, 1.6, 16); // +1 for list's 14pt
+  const tier = determineFontTier(stdH, availH);
+  if (tier !== 'standard') bodyFont = FONT_TIERS.compact.body;
+
+  let currentY = nextY;
   slide.bullets.forEach((bullet, i) => {
-    const y = nextY + i * (itemH + itemGap);
     const parsed = parseBulletLeadIn(bullet);
+    const itemH = estimateTextHeight(bullet, bodyFont + 1, textW, 1.6);
 
-    // Dot
     elements.push({
       id: `dot_${n}_${i}`, type: 'shape',
-      x: MARGIN_L, y: y + 6, width: 6, height: 6,
+      x: MARGIN_L, y: currentY + 6, width: 6, height: 6,
       style: { backgroundColor: accent, borderRadius: 3 },
     });
-
-    // Text
     elements.push({
       id: `item_${n}_${i}`, type: 'text',
-      x: MARGIN_L + 18, y, width: CONTENT_W - 18, height: itemH,
+      x: MARGIN_L + 18, y: currentY, width: textW, height: itemH,
       content: parsed ? `${parsed.lead} ${parsed.rest}` : bullet,
       richContent: parsed ? [{ bold: parsed.lead, regular: ` ${parsed.rest}` }] : undefined,
-      style: { fontSize: 14, color: theme.typography.body, lineHeight: 1.6 },
+      style: { fontSize: bodyFont + 1, color: theme.typography.body, lineHeight: 1.6 },
     });
+    currentY += itemH + 16;
   });
 
   elements.push(counterElement(n, totalSlides, theme.typography.muted));
-  return { elements, background: bg };
+  const fit = (headerTier === 'compact' || tier !== 'standard') ? (tier === 'overflow' ? 'overflow' as const : 'compact' as const) : 'ok' as const;
+  return { elements, background: bg, fit };
 }

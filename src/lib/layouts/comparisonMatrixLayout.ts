@@ -60,5 +60,7 @@ export function comparisonMatrixLayoutSpec(slide: Slide, theme: Theme, totalSlid
   });
 
   elements.push(counterElement(n, totalSlides, theme.typography.muted));
-  return { elements, background: bg };
+  const idealH = (rows.length + 1) * 32 + 10;
+  const fit = idealH <= (405 - nextY - MARGIN_B) ? 'ok' as const : 'compact' as const;
+  return { elements, background: bg, fit };
 }

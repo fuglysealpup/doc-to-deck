@@ -41,5 +41,5 @@ export function dividerLayoutSpec(slide: Slide, theme: Theme, totalSlides: numbe
   });
 
   // Use accent color as background (the export converter will handle this)
-  return { elements, background: accent };
+  return { elements, background: accent, fit: 'ok' };
 }

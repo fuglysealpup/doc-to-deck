@@ -1,6 +1,7 @@
 import { Slide, Theme } from '@/src/types/deck';
-import { LayoutSpec, MARGIN_L, CONTENT_W } from '../layoutSpec';
+import { LayoutSpec, MARGIN_L, MARGIN_B, CONTENT_W } from '../layoutSpec';
 import { commonHeader, counterElement, parseBulletLeadIn } from './common';
+import { estimateTextHeight, FONT_TIERS } from './textMeasure';
 
 export function statHeroLayoutSpec(slide: Slide, theme: Theme, totalSlides: number): LayoutSpec {
   const n = slide.slide_number;
@@ -13,31 +14,36 @@ export function statHeroLayoutSpec(slide: Slide, theme: Theme, totalSlides: numb
   const colW = Math.floor((CONTENT_W - (count - 1) * gap) / count);
   const statY = Math.max(nextY + 20, 210);
 
+  // Measure description heights to ensure they fit
+  const availH = 405 - MARGIN_B - statY - 55; // stat value takes ~50pt
+  const statFont = FONT_TIERS.standard.statValue;
+  const descFont = FONT_TIERS.standard.statDescription;
+
   stats.forEach((bullet, i) => {
     const parsed = parseBulletLeadIn(bullet);
     const statText = parsed ? parsed.lead : bullet;
     const labelText = parsed ? parsed.rest : '';
     const colX = MARGIN_L + i * (colW + gap);
+    const statH = estimateTextHeight(statText, statFont, colW, 1.2);
 
-    // Stat value — large, bold, accent color
     elements.push({
       id: `stat_${n}_${i}`, type: 'text',
-      x: colX, y: statY, width: colW, height: 50,
+      x: colX, y: statY, width: colW, height: statH,
       content: statText,
-      style: { fontSize: 30, fontWeight: 'bold', color: accent, alignment: 'center', lineHeight: 1.2 },
+      style: { fontSize: statFont, fontWeight: 'bold', color: accent, alignment: 'center', lineHeight: 1.2 },
     });
 
-    // Description — small, uppercase, muted
     if (labelText) {
+      const descH = Math.min(estimateTextHeight(labelText, descFont, colW, 1.4), availH);
       elements.push({
         id: `statlbl_${n}_${i}`, type: 'text',
-        x: colX, y: statY + 55, width: colW, height: 60,
+        x: colX, y: statY + statH + 8, width: colW, height: descH,
         content: labelText.toUpperCase(),
-        style: { fontSize: 9, color: theme.typography.muted, alignment: 'center', textTransform: 'uppercase', lineHeight: 1.4 },
+        style: { fontSize: descFont, color: theme.typography.muted, alignment: 'center', textTransform: 'uppercase', lineHeight: 1.4 },
       });
     }
   });
 
   elements.push(counterElement(n, totalSlides, theme.typography.muted));
-  return { elements, background: bg };
+  return { elements, background: bg, fit: 'ok' };
 }
