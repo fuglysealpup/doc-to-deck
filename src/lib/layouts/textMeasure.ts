@@ -71,7 +71,6 @@ export function estimateCardHeight(
   return textHeight + paddingV * 2;
 }
 
-export function estimateBadgeWidth(text: string, fontSize: number, paddingH: number = 20): number {
-  const textWidth = text.length * fontSize * AVG_CHAR_WIDTH_RATIO;
-  return Math.ceil(textWidth + paddingH);
+export function estimateBadgeWidth(text: string, _fontSize?: number, _paddingH?: number): number {
+  return Math.max(100, text.length * 8 + 24);
 }
