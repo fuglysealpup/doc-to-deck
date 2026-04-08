@@ -1,4 +1,4 @@
-const AVG_CHAR_WIDTH_RATIO = 0.50;
+const AVG_CHAR_WIDTH_RATIO = 0.58;
 
 export function estimateLines(text: string, fontSize: number, availableWidth: number): number {
   if (!text || text.length === 0) return 0;
@@ -18,7 +18,7 @@ export function estimateTextHeight(
   text: string, fontSize: number, availableWidth: number, lineHeight: number = 1.3
 ): number {
   const lines = estimateLines(text, fontSize, availableWidth);
-  return Math.ceil(lines * fontSize * lineHeight);
+  return Math.max(fontSize * lineHeight, Math.ceil(lines * fontSize * lineHeight)) + 4;
 }
 
 export function estimateBulletListHeight(
@@ -64,7 +64,7 @@ export const FONT_TIERS: Record<'standard' | 'compact', Record<string, number>> 
 
 export function estimateCardHeight(
   text: string, fontSize: number, cardWidth: number,
-  paddingV: number = 10, paddingH: number = 28
+  paddingV: number = 16, paddingH: number = 36
 ): number {
   const textWidth = cardWidth - paddingH;
   const textHeight = estimateTextHeight(text, fontSize, textWidth);
