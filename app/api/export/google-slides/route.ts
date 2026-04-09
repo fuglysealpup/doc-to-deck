@@ -489,8 +489,25 @@ export async function POST(request: NextRequest) {
         );
 
         const failedSlides = checkResults.filter(r => !r.pass);
+
+        // Log check results
+        if (failedSlides.length > 0) {
+          console.log(`[SlideChecker] Iteration ${iteration + 1}: ${failedSlides.length}/${currentSlides.length} slides failed`);
+          for (const f of failedSlides) {
+            const slide = currentSlides[f.slideIndex];
+            for (const issue of f.issues) {
+              console.log(`[SlideChecker] Slide ${f.slideIndex + 1} (${slide?.layout || slide?.type}): [${issue.severity}] ${issue.description} → ${issue.suggestedFix}`);
+            }
+          }
+        } else {
+          console.log(`[SlideChecker] Iteration ${iteration + 1}: All slides passed`);
+        }
+
         if (failedSlides.length === 0) break;
-        if (iteration === MAX_CHECK_ITERATIONS - 1) break;
+        if (iteration === MAX_CHECK_ITERATIONS - 1) {
+          console.log(`[SlideChecker] Max iterations reached, accepting remaining issues`);
+          break;
+        }
 
         // Remediate and re-export failed slides
         const reExportRequests: SlidesRequest[] = [];
