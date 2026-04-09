@@ -16,6 +16,7 @@ export default function Home() {
   const [error, setError] = useState("");
   const [exportStatus, setExportStatus] = useState<ExportStatus>("idle");
   const [exportError, setExportError] = useState("");
+  const [exportUrl, setExportUrl] = useState("");
   const { theme } = useTheme();
   const didAutoExport = useRef(false);
   const isExporting = useRef(false);
@@ -35,11 +36,14 @@ export default function Home() {
     []
   );
 
-  async function doExport(deck: DeckResponse) {
+  async function doExport(deck: DeckResponse, overrideTheme?: string) {
     if (isExporting.current) return;
     isExporting.current = true;
     setExportStatus("exporting");
     setExportError("");
+    setExportUrl("");
+
+    const themeName = overrideTheme ?? theme.name.toLowerCase();
 
     try {
       const res = await fetch("/api/export/google-slides", {
@@ -48,17 +52,16 @@ export default function Home() {
         body: JSON.stringify({
           title: deck.slides[0]?.headline || "Untitled Deck",
           slides: deck.slides,
-          theme: theme.name.toLowerCase(),
+          theme: themeName,
         }),
       });
 
       const data = await res.json();
 
       if (res.status === 401) {
-        // Not authenticated or token expired — start OAuth
         isExporting.current = false;
         sessionStorage.setItem("deck_for_export", JSON.stringify(deck));
-        sessionStorage.setItem("theme_for_export", theme.name.toLowerCase());
+        sessionStorage.setItem("theme_for_export", themeName);
         window.location.href = "/api/auth/google";
         return;
       }
@@ -71,8 +74,9 @@ export default function Home() {
       }
 
       setExportStatus("success");
+      setExportUrl(data.url);
       window.open(data.url, "_blank");
-      setTimeout(() => { setExportStatus("idle"); isExporting.current = false; }, 3000);
+      setTimeout(() => { setExportStatus("idle"); isExporting.current = false; }, 5000);
     } catch {
       setExportStatus("error");
       setExportError("Failed to connect to the server.");
@@ -89,13 +93,14 @@ export default function Home() {
       window.history.replaceState({}, "", "/");
 
       const savedDeck = sessionStorage.getItem("deck_for_export");
+      const savedTheme = sessionStorage.getItem("theme_for_export");
       if (savedDeck) {
         didAutoExport.current = true;
         const deck: DeckResponse = JSON.parse(savedDeck);
         setResult(deck);
-        setExportStatus("exporting"); // disable button immediately
+        setExportStatus("exporting");
         setTimeout(async () => {
-          await doExport(deck);
+          await doExport(deck, savedTheme || undefined);
           sessionStorage.removeItem("deck_for_export");
           sessionStorage.removeItem("theme_for_export");
         }, 1500);
@@ -273,68 +278,49 @@ export default function Home() {
 
             {/* Export button */}
             <div className="mt-8 flex flex-col items-center gap-2">
-              <button
-                onClick={() => doExport(result)}
-                disabled={exportStatus === "exporting"}
-                className="inline-flex items-center gap-2.5 rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {exportStatus === "exporting" ? (
-                  <>
-                    <svg
-                      className="h-4 w-4 animate-spin"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                      />
-                    </svg>
-                    Exporting...
-                  </>
-                ) : exportStatus === "success" ? (
-                  <>
-                    <svg
-                      className="h-4 w-4 text-emerald-600"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
+              {exportStatus === "success" && exportUrl ? (
+                <>
+                  <div className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-6 py-3 text-sm font-medium text-emerald-700">
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
-                    Opened in Google Slides
-                  </>
-                ) : (
-                  <>
-                    <svg
-                      className="h-4 w-4"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <rect x="2" y="3" width="20" height="14" rx="2" />
-                      <path d="M8 21h8" />
-                      <path d="M12 17v4" />
-                    </svg>
-                    Export to Google Slides
-                  </>
-                )}
-              </button>
+                    Deck ready
+                  </div>
+                  <a
+                    href={exportUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-gray-500 underline underline-offset-2 hover:text-gray-800 transition"
+                  >
+                    Open in Google Slides &rarr;
+                  </a>
+                </>
+              ) : (
+                <button
+                  onClick={() => doExport(result)}
+                  disabled={exportStatus === "exporting"}
+                  className="inline-flex items-center gap-2.5 rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {exportStatus === "exporting" ? (
+                    <>
+                      <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Exporting...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="2" y="3" width="20" height="14" rx="2" />
+                        <path d="M8 21h8" />
+                        <path d="M12 17v4" />
+                      </svg>
+                      Export to Google Slides
+                    </>
+                  )}
+                </button>
+              )}
               {exportStatus === "error" && exportError && (
                 <p className="text-xs text-red-600">{exportError}</p>
               )}

@@ -36,12 +36,21 @@ function hexToRgb(hex: string): RGB {
   };
 }
 
-function cssColorToRgb(color: string): RGB {
+function blendRgba(r: number, g: number, b: number, a: number, bgHex: string): RGB {
+  const bg = hexToRgb(bgHex);
+  return {
+    red:   a * (r / 255) + (1 - a) * bg.red,
+    green: a * (g / 255) + (1 - a) * bg.green,
+    blue:  a * (b / 255) + (1 - a) * bg.blue,
+  };
+}
+
+function cssColorToRgb(color: string, bgHex: string = '#ffffff'): RGB {
   if (!color) return { red: 0.1, green: 0.1, blue: 0.1 };
   if (color.startsWith('#')) return hexToRgb(color);
   if (color.startsWith('rgba')) {
     const match = color.match(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)/);
-    if (match) return { red: +match[1] / 255, green: +match[2] / 255, blue: +match[3] / 255 };
+    if (match) return blendRgba(+match[1], +match[2], +match[3], +match[4], bgHex);
     return { red: 0.5, green: 0.5, blue: 0.5 };
   }
   if (color.startsWith('rgb')) {
@@ -53,9 +62,9 @@ function cssColorToRgb(color: string): RGB {
 
 // ─── SPEC → GOOGLE SLIDES CONVERTERS ───
 
-function specTextToSlides(el: LayoutElement, slideId: string): SlidesRequest[] {
+function specTextToSlides(el: LayoutElement, slideId: string, slideBg: string = '#ffffff'): SlidesRequest[] {
   const reqs: SlidesRequest[] = [];
-  const color = cssColorToRgb(el.style.color || '#1a1a1a');
+  const color = cssColorToRgb(el.style.color || '#1a1a1a', slideBg);
   const text = el.content || '';
   if (!text) return reqs;
 
@@ -71,7 +80,7 @@ function specTextToSlides(el: LayoutElement, slideId: string): SlidesRequest[] {
         },
       },
     });
-    const bgRgb = cssColorToRgb(el.style.backgroundColor);
+    const bgRgb = cssColorToRgb(el.style.backgroundColor, slideBg);
     reqs.push({
       updateShapeProperties: {
         objectId: el.id,
@@ -162,10 +171,10 @@ function specTextToSlides(el: LayoutElement, slideId: string): SlidesRequest[] {
   return reqs;
 }
 
-function specShapeToSlides(el: LayoutElement, slideId: string): SlidesRequest[] {
+function specShapeToSlides(el: LayoutElement, slideId: string, slideBg: string = '#ffffff'): SlidesRequest[] {
   const reqs: SlidesRequest[] = [];
   const shapeType = (el.style.borderRadius && el.style.borderRadius > 0) ? "ROUND_RECTANGLE" : "RECTANGLE";
-  const bgColor = el.style.backgroundColor ? cssColorToRgb(el.style.backgroundColor) : null;
+  const bgColor = el.style.backgroundColor ? cssColorToRgb(el.style.backgroundColor, slideBg) : null;
 
   reqs.push({
     createShape: {
@@ -195,7 +204,7 @@ function specShapeToSlides(el: LayoutElement, slideId: string): SlidesRequest[] 
   if (el.children) {
     for (const child of el.children) {
       if (child.type === 'text') {
-        reqs.push(...specTextToSlides(child, slideId));
+        reqs.push(...specTextToSlides(child, slideId, slideBg));
       }
     }
   }
@@ -440,10 +449,10 @@ export async function POST(request: NextRequest) {
       for (const element of spec.elements) {
         switch (element.type) {
           case 'text':
-            requests.push(...specTextToSlides(element, slideId));
+            requests.push(...specTextToSlides(element, slideId, spec.background));
             break;
           case 'shape':
-            requests.push(...specShapeToSlides(element, slideId));
+            requests.push(...specShapeToSlides(element, slideId, spec.background));
             break;
           case 'table':
             requests.push(...specTableToSlides(element, slideId));
@@ -552,8 +561,8 @@ export async function POST(request: NextRequest) {
               vElement.children = vElement.children.map(c => ({ ...c, id: `${c.id}_v${iteration + 1}` }));
             }
             switch (vElement.type) {
-              case 'text': reExportRequests.push(...specTextToSlides(vElement, newSlideId)); break;
-              case 'shape': reExportRequests.push(...specShapeToSlides(vElement, newSlideId)); break;
+              case 'text': reExportRequests.push(...specTextToSlides(vElement, newSlideId, spec.background)); break;
+              case 'shape': reExportRequests.push(...specShapeToSlides(vElement, newSlideId, spec.background)); break;
               case 'table': reExportRequests.push(...specTableToSlides(vElement, newSlideId)); break;
             }
           }
