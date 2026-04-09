@@ -2,11 +2,12 @@ import { Slide, Theme } from '@/src/types/deck';
 import { LayoutSpec, MARGIN_L, MARGIN_B, CONTENT_W } from '../layoutSpec';
 import { commonHeader, counterElement, parseBulletLeadIn } from './common';
 import { estimateCardHeight, determineFontTier, FONT_TIERS, FontTier } from './textMeasure';
+import { getReadableColors } from './readability';
 
 export function cardsLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, forceTier?: FontTier): LayoutSpec {
   const n = slide.slide_number;
   const bg = theme.backgrounds[slide.type];
-  const { elements, nextY, tier: headerTier } = commonHeader(slide, theme, undefined, forceTier);
+  const { elements, nextY, tier: headerTier, colors } = commonHeader(slide, theme, undefined, forceTier);
 
   const cards = slide.bullets.slice(0, 6);
   const cols = cards.length <= 3 ? cards.length : Math.ceil(cards.length / 2);
@@ -46,18 +47,18 @@ export function cardsLayoutSpec(slide: Slide, theme: Theme, totalSlides: number,
     elements.push({
       id: `card_${n}_${i}`, type: 'shape',
       x, y, width: cardW, height: h,
-      style: { backgroundColor: theme.decorative.cardBackground, borderRadius: 8, borderColor: theme.decorative.cardBorder.replace(/^[\d.]+px\s+solid\s+/, ''), borderWidth: 0.5 },
+      style: { backgroundColor: colors.cardBackground, borderRadius: 8, borderColor: theme.decorative.cardBorder.replace(/^[\d.]+px\s+solid\s+/, ''), borderWidth: 0.5 },
       children: [{
         id: `cardtxt_${n}_${i}`, type: 'text',
         x: x + 14, y: y + 10, width: cardW - 28, height: h - 20,
         content: parsed ? `${parsed.lead}\n${parsed.rest}` : bullet,
         richContent: parsed ? [{ bold: parsed.lead, regular: `\n${parsed.rest}` }] : undefined,
-        style: { fontSize: bodyFont, color: theme.typography.body, lineHeight: 1.5 },
+        style: { fontSize: bodyFont, color: colors.body, lineHeight: 1.5 },
       }],
     });
   });
 
-  elements.push(counterElement(n, totalSlides, theme.typography.muted));
+  elements.push(counterElement(n, totalSlides, colors.counterColor));
   const fit = (headerTier === 'compact' || tier !== 'standard') ? (tier === 'overflow' ? 'overflow' as const : 'compact' as const) : 'ok' as const;
   return { elements, background: bg, fit };
 }

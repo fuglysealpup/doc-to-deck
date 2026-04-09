@@ -3,6 +3,7 @@ import { LayoutSpec, MARGIN_L, MARGIN_B, CONTENT_W } from '../layoutSpec';
 import { TableData, TableRow, TableCell } from '../layoutSpec';
 import { commonHeader, counterElement } from './common';
 import { FontTier } from './textMeasure';
+import { getReadableColors } from './readability';
 
 function cellColor(val: string): string | undefined {
   const v = val.trim().toLowerCase();
@@ -23,8 +24,7 @@ export function comparisonMatrixLayoutSpec(slide: Slide, theme: Theme, totalSlid
   const bg = theme.backgrounds[slide.type];
   const accent = theme.accents[slide.type];
   // Tighter padding matching ComparisonMatrixLayout.tsx: 36px 48px
-  const elements = commonHeader(slide, theme, undefined, forceTier).elements;
-  const nextY = commonHeader(slide, theme, undefined, forceTier).nextY;
+  const { elements, nextY, colors } = commonHeader(slide, theme, undefined, forceTier);
 
   const headerParts = slide.bullets.length > 0
     ? slide.bullets[0].split('|').map(s => s.trim()).filter(Boolean)
@@ -60,7 +60,7 @@ export function comparisonMatrixLayoutSpec(slide: Slide, theme: Theme, totalSlid
     tableData,
   });
 
-  elements.push(counterElement(n, totalSlides, theme.typography.muted));
+  elements.push(counterElement(n, totalSlides, colors.counterColor));
   const idealH = (rows.length + 1) * 32 + 10;
   const fit = idealH <= (405 - nextY - MARGIN_B) ? 'ok' as const : 'compact' as const;
   return { elements, background: bg, fit };

@@ -1,25 +1,18 @@
 import { Slide, Theme } from '@/src/types/deck';
 import { LayoutSpec, LayoutElement, CONTENT_W } from '../layoutSpec';
 import { estimateTextHeight, estimateLines, estimateBadgeWidth, FontTier } from './textMeasure';
+import { getReadableColors } from './readability';
 
 const PAD_V = 56;
 const PAD_H = 64;
 const W = 720 - PAD_H * 2;
-
-function isColorDark(hex: string): boolean {
-  const h = hex.replace('#', '');
-  return parseInt(h.substring(0, 2), 16) + parseInt(h.substring(2, 4), 16) + parseInt(h.substring(4, 6), 16) < 384;
-}
 
 export function heroLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, forceTier?: FontTier): LayoutSpec {
   const n = slide.slide_number;
   const bg = theme.backgrounds[slide.type];
   const accent = theme.accents[slide.type];
   const badge = theme.badges[slide.type];
-  const isDark = isColorDark(bg);
-  const headColor = isDark ? '#ffffff' : theme.typography.body;
-  const mutedColor = isDark ? 'rgba(255,255,255,0.6)' : theme.typography.muted;
-  const counterColor = isDark ? 'rgba(255,255,255,0.3)' : theme.typography.muted;
+  const colors = getReadableColors(bg, theme, slide.type);
   const isClosing = slide.type === 'closing';
   const elements: LayoutElement[] = [];
 
@@ -29,7 +22,7 @@ export function heroLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, 
       id: `badge_${n}`, type: 'text',
       x: (720 - estimateBadgeWidth(badgeText, 10)) / 2, y: 140, width: estimateBadgeWidth(badgeText, 10), height: 20,
       content: badgeText,
-      style: { fontSize: 10, fontWeight: 'bold', color: badge.color, backgroundColor: badge.background, alignment: 'center', textTransform: 'uppercase', letterSpacing: '0.06em', borderRadius: 10 },
+      style: { fontSize: 10, fontWeight: 'bold', color: colors.badgeText, backgroundColor: colors.badgeBackground, alignment: 'center', textTransform: 'uppercase', letterSpacing: '0.06em', borderRadius: 10 },
     });
 
     let headlineFont = 30;
@@ -38,7 +31,7 @@ export function heroLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, 
       id: `headline_${n}`, type: 'text',
       x: PAD_H, y: 170, width: W, height: headlineH,
       content: slide.headline,
-      style: { fontSize: headlineFont, fontWeight: 'bold', color: headColor, alignment: 'center', lineHeight: 1.2 },
+      style: { fontSize: headlineFont, fontWeight: 'bold', color: colors.headline, alignment: 'center', lineHeight: 1.2 },
     });
 
     if (slide.subheadline) {
@@ -48,7 +41,7 @@ export function heroLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, 
         id: `sub_${n}`, type: 'text',
         x: PAD_H, y: subY, width: W, height: subH,
         content: slide.subheadline,
-        style: { fontSize: 15, color: mutedColor, alignment: 'center', lineHeight: 1.5 },
+        style: { fontSize: 15, color: colors.muted, alignment: 'center', lineHeight: 1.5 },
       });
     }
   } else {
@@ -82,7 +75,7 @@ export function heroLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, 
       id: `badge_${n}`, type: 'text',
       x: PAD_H, y: badgeY, width: estimateBadgeWidth(badgeText, 10), height: 20,
       content: badgeText,
-      style: { fontSize: 10, fontWeight: 'bold', color: badge.color, backgroundColor: badge.background, textTransform: 'uppercase', letterSpacing: '0.06em', borderRadius: 10 },
+      style: { fontSize: 10, fontWeight: 'bold', color: colors.badgeText, backgroundColor: colors.badgeBackground, textTransform: 'uppercase', letterSpacing: '0.06em', borderRadius: 10 },
     });
 
     // Headline
@@ -91,7 +84,7 @@ export function heroLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, 
       id: `headline_${n}`, type: 'text',
       x: PAD_H, y: headlineY, width: W, height: headlineH,
       content: slide.headline,
-      style: { fontSize: headlineFont, fontWeight: 'bold', color: headColor, lineHeight: 1.2 },
+      style: { fontSize: headlineFont, fontWeight: 'bold', color: colors.headline, lineHeight: 1.2 },
     });
   }
 
@@ -99,7 +92,7 @@ export function heroLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, 
     id: `counter_${n}`, type: 'text',
     x: W + PAD_H - 50, y: 405 - PAD_V - 14, width: 50, height: 14,
     content: `${n} / ${totalSlides}`,
-    style: { fontSize: 11, color: counterColor, alignment: 'right' },
+    style: { fontSize: 11, color: colors.counterColor, alignment: 'right' },
   });
 
   return { elements, background: bg, fit: 'ok' };

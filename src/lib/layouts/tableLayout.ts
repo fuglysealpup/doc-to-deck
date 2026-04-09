@@ -3,12 +3,13 @@ import { LayoutSpec, LayoutElement, MARGIN_L, MARGIN_B, CONTENT_W } from '../lay
 import { TableData, TableRow, TableCell } from '../layoutSpec';
 import { commonHeader, counterElement, parseBulletLeadIn } from './common';
 import { FontTier } from './textMeasure';
+import { getReadableColors } from './readability';
 
 export function tableLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, forceTier?: FontTier): LayoutSpec {
   const n = slide.slide_number;
   const bg = theme.backgrounds[slide.type];
   const accent = theme.accents[slide.type];
-  const { elements, nextY } = commonHeader(slide, theme, undefined, forceTier);
+  const { elements, nextY, colors } = commonHeader(slide, theme, undefined, forceTier);
 
   const hasPipe = slide.bullets.some(b => b.includes('|'));
   let tableData: TableData;
@@ -58,7 +59,7 @@ export function tableLayoutSpec(slide: Slide, theme: Theme, totalSlides: number,
     tableData,
   });
 
-  elements.push(counterElement(n, totalSlides, theme.typography.muted));
+  elements.push(counterElement(n, totalSlides, colors.counterColor));
   const idealH = (tableData.rows.length + 1) * 32 + 10;
   const fit = idealH <= (405 - nextY - MARGIN_B) ? 'ok' as const : 'compact' as const;
   return { elements, background: bg, fit };

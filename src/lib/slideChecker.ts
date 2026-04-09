@@ -40,6 +40,7 @@ export async function checkSlideRendering(
 3. BOUNDARY VIOLATION: Does any content extend beyond the bottom or right edge of the slide?
 4. BADGE LABEL: Is the intent badge fully visible on one line, or is it wrapping or clipped?
 5. EMPTY SPACE: Is there excessive unused space while text elsewhere is cramped?
+6. COLOR CONTRAST: Is all text readable against its background? Check for dark text on dark backgrounds, light text on light backgrounds, or badge pills where the text color matches the pill background. Every text element must have clear contrast with whatever is behind it.
 
 Slide context: "${slideContent.layout}" layout, headline "${slideContent.headline}", ${slideContent.bulletCount} bullets.
 

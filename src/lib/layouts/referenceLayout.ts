@@ -2,12 +2,13 @@ import { Slide, Theme } from '@/src/types/deck';
 import { LayoutSpec, MARGIN_L, MARGIN_B, CONTENT_W } from '../layoutSpec';
 import { commonHeader, counterElement } from './common';
 import { estimateTextHeight, determineFontTier, FONT_TIERS, FontTier } from './textMeasure';
+import { getReadableColors } from './readability';
 
 export function referenceLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, forceTier?: FontTier): LayoutSpec {
   const n = slide.slide_number;
   const bg = theme.backgrounds[slide.type];
   const accent = theme.accents[slide.type];
-  const { elements, nextY, tier: headerTier } = commonHeader(slide, theme, undefined, forceTier);
+  const { elements, nextY, tier: headerTier, colors } = commonHeader(slide, theme, undefined, forceTier);
   const textW = CONTENT_W - 16;
   const availH = 405 - MARGIN_B - nextY;
 
@@ -30,12 +31,12 @@ export function referenceLayoutSpec(slide: Slide, theme: Theme, totalSlides: num
       id: `reftxt_${n}_${i}`, type: 'text',
       x: MARGIN_L + 16, y: currentY, width: textW, height: h,
       content: bullet,
-      style: { fontSize: bodyFont, color: theme.typography.body, lineHeight: 1.5 },
+      style: { fontSize: bodyFont, color: colors.body, lineHeight: 1.5 },
     });
     currentY += h + 4;
   });
 
-  elements.push(counterElement(n, totalSlides, theme.typography.muted));
+  elements.push(counterElement(n, totalSlides, colors.counterColor));
   const fit = (headerTier === 'compact' || tier !== 'standard') ? (tier === 'overflow' ? 'overflow' as const : 'compact' as const) : 'ok' as const;
   return { elements, background: bg, fit };
 }

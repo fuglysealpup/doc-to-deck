@@ -2,6 +2,7 @@ import { Slide, Theme } from '@/src/types/deck';
 import { LayoutSpec, MARGIN_L, MARGIN_B, CONTENT_W } from '../layoutSpec';
 import { commonHeader, counterElement } from './common';
 import { estimateBulletListHeight, determineFontTier, FONT_TIERS, FontTier } from './textMeasure';
+import { getReadableColors } from './readability';
 
 const PRO_COLOR = '#1a7a4c';
 const CON_COLOR = '#b45309';
@@ -9,7 +10,7 @@ const CON_COLOR = '#b45309';
 export function proConLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, forceTier?: FontTier): LayoutSpec {
   const n = slide.slide_number;
   const bg = theme.backgrounds[slide.type];
-  const { elements, nextY, tier: headerTier } = commonHeader(slide, theme, undefined, forceTier);
+  const { elements, nextY, tier: headerTier, colors } = commonHeader(slide, theme, undefined, forceTier);
 
   const pros: string[] = [];
   const cons: string[] = [];
@@ -50,7 +51,7 @@ export function proConLayoutSpec(slide: Slide, theme: Theme, totalSlides: number
       id: `pros_${n}`, type: 'text',
       x: MARGIN_L + 16, y: colY + 38, width: textW, height: colH - 50,
       content: pros.map(p => `✓  ${p}`).join('\n'),
-      style: { fontSize: bodyFont - 1, color: theme.typography.body, lineHeight: 1.5 },
+      style: { fontSize: bodyFont - 1, color: colors.body, lineHeight: 1.5 },
     });
   }
 
@@ -67,11 +68,11 @@ export function proConLayoutSpec(slide: Slide, theme: Theme, totalSlides: number
       id: `cons_${n}`, type: 'text',
       x: rightX + 16, y: colY + 38, width: textW, height: colH - 50,
       content: cons.map(c => `⚠  ${c}`).join('\n'),
-      style: { fontSize: bodyFont - 1, color: theme.typography.body, lineHeight: 1.5 },
+      style: { fontSize: bodyFont - 1, color: colors.body, lineHeight: 1.5 },
     });
   }
 
-  elements.push(counterElement(n, totalSlides, theme.typography.muted));
+  elements.push(counterElement(n, totalSlides, colors.counterColor));
   const fit = (headerTier === 'compact' || tier !== 'standard') ? (tier === 'overflow' ? 'overflow' as const : 'compact' as const) : 'ok' as const;
   return { elements, background: bg, fit };
 }

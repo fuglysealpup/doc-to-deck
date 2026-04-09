@@ -2,12 +2,13 @@ import { Slide, Theme } from '@/src/types/deck';
 import { LayoutSpec, MARGIN_L, MARGIN_B, CONTENT_W } from '../layoutSpec';
 import { commonHeader, counterElement, parseBulletLeadIn } from './common';
 import { estimateTextHeight, FONT_TIERS, FontTier } from './textMeasure';
+import { getReadableColors } from './readability';
 
 export function statHeroLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, forceTier?: FontTier): LayoutSpec {
   const n = slide.slide_number;
   const bg = theme.backgrounds[slide.type];
   const accent = theme.accents[slide.type];
-  const { elements, nextY } = commonHeader(slide, theme, undefined, forceTier);
+  const { elements, nextY, colors } = commonHeader(slide, theme, undefined, forceTier);
   const stats = slide.bullets.slice(0, 3);
   const count = stats.length || 1;
   const gap = 24;
@@ -39,11 +40,11 @@ export function statHeroLayoutSpec(slide: Slide, theme: Theme, totalSlides: numb
         id: `statlbl_${n}_${i}`, type: 'text',
         x: colX, y: statY + statH + 8, width: colW, height: descH,
         content: labelText.toUpperCase(),
-        style: { fontSize: descFont, color: theme.typography.muted, alignment: 'center', textTransform: 'uppercase', lineHeight: 1.4 },
+        style: { fontSize: descFont, color: colors.muted, alignment: 'center', textTransform: 'uppercase', lineHeight: 1.4 },
       });
     }
   });
 
-  elements.push(counterElement(n, totalSlides, theme.typography.muted));
+  elements.push(counterElement(n, totalSlides, colors.counterColor));
   return { elements, background: bg, fit: 'ok' };
 }

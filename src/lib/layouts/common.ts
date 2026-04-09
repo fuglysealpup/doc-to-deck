@@ -1,6 +1,7 @@
 import { Slide, Theme } from '@/src/types/deck';
 import { LayoutElement, MARGIN_L, MARGIN_T, MARGIN_B, CONTENT_W } from '../layoutSpec';
 import { estimateTextHeight, estimateLines, estimateBadgeWidth, FONT_TIERS, FontTier } from './textMeasure';
+import { getReadableColors, ReadableColors } from './readability';
 
 export function parseBulletLeadIn(bullet: string): { lead: string; rest: string } | null {
   const match = bullet.match(/^(.+?)\s—\s(.+)$/);
@@ -14,10 +15,12 @@ export function commonHeader(
   theme: Theme,
   headlineWidth: number = CONTENT_W,
   forceTier?: FontTier,
-): { elements: LayoutElement[]; nextY: number; tier: FontTier } {
+): { elements: LayoutElement[]; nextY: number; tier: FontTier; colors: ReadableColors } {
   const n = slide.slide_number;
   const accent = theme.accents[slide.type];
   const badge = theme.badges[slide.type];
+  const bg = theme.backgrounds[slide.type];
+  const colors = getReadableColors(bg, theme, slide.type);
   const elements: LayoutElement[] = [];
   let currentY = MARGIN_T;
 
@@ -38,7 +41,7 @@ export function commonHeader(
     content: badgeText,
     style: {
       fontSize: 10, fontWeight: 'bold',
-      color: badge.color, backgroundColor: badge.background,
+      color: colors.badgeText, backgroundColor: colors.badgeBackground,
       letterSpacing: '0.06em', textTransform: 'uppercase', borderRadius: 10,
     },
   });
@@ -64,7 +67,7 @@ export function commonHeader(
     content: slide.headline,
     style: {
       fontSize: headlineFontSize,
-      fontWeight: 'bold', color: theme.typography.body, lineHeight: 1.3,
+      fontWeight: 'bold', color: colors.headline, lineHeight: 1.3,
     },
   });
   currentY += headlineH + 8;
@@ -77,12 +80,12 @@ export function commonHeader(
       id: `sub_${n}`, type: 'text',
       x: MARGIN_L, y: currentY, width: headlineWidth, height: subH,
       content: slide.subheadline,
-      style: { fontSize: subFontSize, color: theme.typography.muted, lineHeight: 1.5 },
+      style: { fontSize: subFontSize, color: colors.muted, lineHeight: 1.5 },
     });
     currentY += subH + 12;
   }
 
-  return { elements, nextY: currentY, tier };
+  return { elements, nextY: currentY, tier, colors };
 }
 
 export function counterElement(n: number, totalSlides: number, color: string): LayoutElement {
