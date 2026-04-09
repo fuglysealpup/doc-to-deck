@@ -35,6 +35,7 @@ export default function Home() {
   );
 
   async function doExport(deck: DeckResponse) {
+    if (exportStatus === "exporting") return; // prevent double-fire
     setExportStatus("exporting");
     setExportError("");
 
