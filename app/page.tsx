@@ -18,6 +18,7 @@ export default function Home() {
   const [exportError, setExportError] = useState("");
   const { theme } = useTheme();
   const didAutoExport = useRef(false);
+  const isExporting = useRef(false);
 
   const updateSlide = useCallback(
     (slideNumber: number, updatedSlide: Slide) => {
@@ -35,7 +36,8 @@ export default function Home() {
   );
 
   async function doExport(deck: DeckResponse) {
-    if (exportStatus === "exporting") return; // prevent double-fire
+    if (isExporting.current) return;
+    isExporting.current = true;
     setExportStatus("exporting");
     setExportError("");
 
@@ -54,6 +56,7 @@ export default function Home() {
 
       if (res.status === 401) {
         // Not authenticated or token expired — start OAuth
+        isExporting.current = false;
         sessionStorage.setItem("deck_for_export", JSON.stringify(deck));
         sessionStorage.setItem("theme_for_export", theme.name.toLowerCase());
         window.location.href = "/api/auth/google";
@@ -63,15 +66,17 @@ export default function Home() {
       if (!res.ok) {
         setExportStatus("error");
         setExportError(data.error || "Export failed.");
+        isExporting.current = false;
         return;
       }
 
       setExportStatus("success");
       window.open(data.url, "_blank");
-      setTimeout(() => setExportStatus("idle"), 3000);
+      setTimeout(() => { setExportStatus("idle"); isExporting.current = false; }, 3000);
     } catch {
       setExportStatus("error");
       setExportError("Failed to connect to the server.");
+      isExporting.current = false;
     }
   }
 
@@ -88,8 +93,7 @@ export default function Home() {
         didAutoExport.current = true;
         const deck: DeckResponse = JSON.parse(savedDeck);
         setResult(deck);
-        // Keep sessionStorage until export succeeds — doExport will
-        // re-save if it needs to redirect again. Clean up after export.
+        setExportStatus("exporting"); // disable button immediately
         setTimeout(async () => {
           await doExport(deck);
           sessionStorage.removeItem("deck_for_export");
