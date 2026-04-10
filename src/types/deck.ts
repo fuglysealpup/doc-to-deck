@@ -27,6 +27,7 @@ export interface DeckResponse {
   narrative_summary: string;
   audience_note: string;
   slides: Slide[];
+  model_used?: string;
 }
 
 export interface SlideProps {

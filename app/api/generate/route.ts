@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 import { NextRequest, NextResponse } from "next/server";
 
 const PROMPT_TEMPLATE = `You are an expert presentation strategist. Your job is to transform a content document into a well-structured slide deck.
@@ -127,7 +128,16 @@ For each slide, ask yourself: what is the audience supposed to think or feel aft
 
 Return ONLY the JSON. No preamble, no explanation, no markdown fences.`;
 
-const client = new Anthropic();
+const anthropic = new Anthropic();
+// Requires OPENAI_API_KEY environment variable in Vercel settings
+let openaiClient: OpenAI | null = null;
+function getOpenAI(): OpenAI {
+  if (!openaiClient) {
+    if (!process.env.OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
+    openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return openaiClient;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -135,6 +145,7 @@ export async function POST(request: NextRequest) {
     const doc: string = body.doc || body.content || "";
     const audience: string = body.audience || "";
     const desiredOutcome: string = body.desiredOutcome || "";
+    const model: string = body.model || "claude";
 
     if (!doc || doc.trim().length === 0) {
       return NextResponse.json(
@@ -153,22 +164,37 @@ export async function POST(request: NextRequest) {
         desiredOutcome.trim() || "Not specified — infer from the document content"
       );
 
-    const message = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 4000,
-      system: systemPrompt,
-      messages: [{ role: "user", content: doc }],
-    });
+    let rawText: string;
 
-    const textBlock = message.content.find((block) => block.type === "text");
-    if (!textBlock || textBlock.type !== "text") {
-      return NextResponse.json(
-        { error: "No text response from API." },
-        { status: 502 }
-      );
+    if (model === "openai") {
+      const response = await getOpenAI().chat.completions.create({
+        model: "gpt-5.4",
+        max_tokens: 4000,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: doc },
+        ],
+      });
+      rawText = response.choices[0]?.message?.content || "";
+    } else {
+      const message = await anthropic.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 4000,
+        system: systemPrompt,
+        messages: [{ role: "user", content: doc }],
+      });
+      const textBlock = message.content.find((block) => block.type === "text");
+      if (!textBlock || textBlock.type !== "text") {
+        return NextResponse.json(
+          { error: "No text response from API." },
+          { status: 502 }
+        );
+      }
+      rawText = textBlock.text;
     }
 
-    const parsed = JSON.parse(textBlock.text);
+    const parsed = JSON.parse(rawText.replace(/```json|```/g, "").trim());
+    parsed.model_used = model;
     return NextResponse.json(parsed);
   } catch (error: unknown) {
     const msg =

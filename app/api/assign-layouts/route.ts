@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 import { NextRequest, NextResponse } from "next/server";
 import { Slide } from "@/src/types/deck";
 
@@ -134,10 +135,19 @@ Return a JSON array with one object per slide:
 Return ONLY the JSON array. No preamble, no explanation, no markdown fences.`;
 
 const client = new Anthropic();
+// Requires OPENAI_API_KEY environment variable in Vercel settings
+let openaiClient: OpenAI | null = null;
+function getOpenAI(): OpenAI {
+  if (!openaiClient) {
+    if (!process.env.OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
+    openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return openaiClient;
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const { slides } = (await request.json()) as { slides: Slide[] };
+    const { slides, model = "claude" } = (await request.json()) as { slides: Slide[]; model?: string };
 
     if (!slides || slides.length === 0) {
       return NextResponse.json({ error: "No slides provided." }, { status: 400 });
@@ -152,19 +162,33 @@ export async function POST(request: NextRequest) {
       speaker_note_preview: (s.speaker_note || '').slice(0, 100),
     }));
 
-    const message = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1000,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content: JSON.stringify(slideSummary) }],
-    });
+    let rawText: string;
 
-    const textBlock = message.content.find((block) => block.type === "text");
-    if (!textBlock || textBlock.type !== "text") {
-      return NextResponse.json({ error: "No text response." }, { status: 502 });
+    if (model === "openai") {
+      const response = await getOpenAI().chat.completions.create({
+        model: "gpt-5.4",
+        max_tokens: 1000,
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: JSON.stringify(slideSummary) },
+        ],
+      });
+      rawText = response.choices[0]?.message?.content || "[]";
+    } else {
+      const message = await client.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: "user", content: JSON.stringify(slideSummary) }],
+      });
+      const textBlock = message.content.find((block) => block.type === "text");
+      if (!textBlock || textBlock.type !== "text") {
+        return NextResponse.json({ error: "No text response." }, { status: 502 });
+      }
+      rawText = textBlock.text;
     }
 
-    const layouts = JSON.parse(textBlock.text);
+    const layouts = JSON.parse(rawText.replace(/```json|```/g, "").trim());
     return NextResponse.json({ layouts });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : "Layout assignment failed.";

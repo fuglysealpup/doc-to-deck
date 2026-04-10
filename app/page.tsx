@@ -17,6 +17,7 @@ export default function Home() {
   const [exportStatus, setExportStatus] = useState<ExportStatus>("idle");
   const [exportError, setExportError] = useState("");
   const [exportUrl, setExportUrl] = useState("");
+  const [model, setModel] = useState<"claude" | "openai">("claude");
   const { theme } = useTheme();
   const didAutoExport = useRef(false);
   const isExporting = useRef(false);
@@ -121,7 +122,7 @@ export default function Home() {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ doc, audience, desiredOutcome }),
+        body: JSON.stringify({ doc, audience, desiredOutcome, model }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -142,7 +143,7 @@ export default function Home() {
         const layoutRes = await fetch("/api/assign-layouts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ slides: deckData.slides }),
+          body: JSON.stringify({ slides: deckData.slides, model }),
         });
         if (layoutRes.ok) {
           const { layouts } = await layoutRes.json();
@@ -229,6 +230,40 @@ export default function Home() {
               className="w-full rounded-xl border border-gray-200 bg-white px-5 py-3 text-base text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200"
             />
           </div>
+        </div>
+
+        {/* Model selector */}
+        <div className="mt-4 flex items-center gap-3">
+          <span style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "#999" }}>
+            Model
+          </span>
+          <div className="flex items-center gap-1 rounded-lg p-1" style={{ background: "#f5f5f5" }}>
+            <button
+              onClick={() => setModel("claude")}
+              style={{
+                padding: "5px 12px", fontSize: 12, fontWeight: 500, borderRadius: 6, border: "none", cursor: "pointer",
+                background: model === "claude" ? "#1a1a1a" : "transparent",
+                color: model === "claude" ? "#ffffff" : "#666666",
+                transition: "all 0.15s ease",
+              }}
+            >
+              Claude Sonnet 4
+            </button>
+            <button
+              onClick={() => setModel("openai")}
+              style={{
+                padding: "5px 12px", fontSize: 12, fontWeight: 500, borderRadius: 6, border: "none", cursor: "pointer",
+                background: model === "openai" ? "#1a1a1a" : "transparent",
+                color: model === "openai" ? "#ffffff" : "#666666",
+                transition: "all 0.15s ease",
+              }}
+            >
+              GPT-5.4
+            </button>
+          </div>
+          {model === "openai" && (
+            <span style={{ fontSize: 11, color: "#999" }}>experimental</span>
+          )}
         </div>
 
         <button

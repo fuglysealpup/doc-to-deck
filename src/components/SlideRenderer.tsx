@@ -268,6 +268,16 @@ export default function SlideRenderer({ deck, onUpdateSlide }: SlideRendererProp
         <p style={{ fontSize: 15, color: '#333', lineHeight: 1.6, margin: 0 }}>
           {deck.audience_note}
         </p>
+        {deck.model_used && (
+          <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: '#ccc' }}>
+              Generated with
+            </span>
+            <span style={{ fontSize: 12, color: '#999' }}>
+              {deck.model_used === 'openai' ? 'GPT-5.4' : 'Claude Sonnet 4'}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Slides */}
