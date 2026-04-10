@@ -17,7 +17,7 @@ export default function Home() {
   const [exportStatus, setExportStatus] = useState<ExportStatus>("idle");
   const [exportError, setExportError] = useState("");
   const [exportUrl, setExportUrl] = useState("");
-  const [model, setModel] = useState<"claude" | "openai">("claude");
+  const [model, setModel] = useState<"claude" | "opus" | "openai">("claude");
   const { theme } = useTheme();
   const didAutoExport = useRef(false);
   const isExporting = useRef(false);
@@ -250,6 +250,17 @@ export default function Home() {
               Claude Sonnet 4
             </button>
             <button
+              onClick={() => setModel("opus")}
+              style={{
+                padding: "5px 12px", fontSize: 12, fontWeight: 500, borderRadius: 6, border: "none", cursor: "pointer",
+                background: model === "opus" ? "#1a1a1a" : "transparent",
+                color: model === "opus" ? "#ffffff" : "#666666",
+                transition: "all 0.15s ease",
+              }}
+            >
+              Claude Opus 4.6
+            </button>
+            <button
               onClick={() => setModel("openai")}
               style={{
                 padding: "5px 12px", fontSize: 12, fontWeight: 500, borderRadius: 6, border: "none", cursor: "pointer",
@@ -263,6 +274,9 @@ export default function Home() {
           </div>
           {model === "openai" && (
             <span style={{ fontSize: 11, color: "#999" }}>experimental</span>
+          )}
+          {model === "opus" && (
+            <span style={{ fontSize: 11, color: "#999" }}>slower &middot; higher cost</span>
           )}
         </div>
 

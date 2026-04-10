@@ -175,8 +175,9 @@ export async function POST(request: NextRequest) {
       });
       rawText = response.choices[0]?.message?.content || "[]";
     } else {
+      const modelString = model === "opus" ? "claude-opus-4-6" : "claude-sonnet-4-20250514";
       const message = await client.messages.create({
-        model: "claude-sonnet-4-20250514",
+        model: modelString,
         max_tokens: 1000,
         system: SYSTEM_PROMPT,
         messages: [{ role: "user", content: JSON.stringify(slideSummary) }],
