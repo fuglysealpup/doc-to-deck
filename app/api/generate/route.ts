@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
     if (model === "openai") {
       const response = await getOpenAI().chat.completions.create({
         model: "gpt-5.4",
-        max_tokens: 4000,
+        max_completion_tokens: 4000,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: doc },
