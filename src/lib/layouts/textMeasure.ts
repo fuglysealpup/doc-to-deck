@@ -1,11 +1,15 @@
-const AVG_CHAR_WIDTH_RATIO = 0.58;
+function getCharWidthRatio(fontSize: number): number {
+  if (fontSize >= 28) return 0.62;
+  if (fontSize >= 18) return 0.58;
+  if (fontSize >= 12) return 0.54;
+  return 0.50;
+}
 
 export function estimateLines(text: string, fontSize: number, availableWidth: number): number {
   if (!text || text.length === 0) return 0;
-  const avgCharWidth = fontSize * AVG_CHAR_WIDTH_RATIO;
+  const avgCharWidth = fontSize * getCharWidthRatio(fontSize);
   const charsPerLine = Math.floor(availableWidth / avgCharWidth);
   if (charsPerLine <= 0) return 1;
-  // Handle newlines
   const lines = text.split('\n');
   let total = 0;
   for (const line of lines) {
@@ -37,7 +41,7 @@ export type FontTier = 'standard' | 'compact' | 'overflow';
 
 export function determineFontTier(totalContentHeight: number, availableHeight: number): FontTier {
   if (totalContentHeight <= availableHeight) return 'standard';
-  if (totalContentHeight * 0.80 <= availableHeight) return 'compact';
+  if (totalContentHeight * 0.88 <= availableHeight) return 'compact';
   return 'overflow';
 }
 
@@ -71,6 +75,9 @@ export function estimateCardHeight(
   return textHeight + paddingV * 2;
 }
 
-export function estimateBadgeWidth(text: string, _fontSize?: number, _paddingH?: number): number {
-  return Math.max(100, text.length * 8 + 24);
+export function estimateBadgeWidth(text: string, fontSize: number = 10): number {
+  const charWidth = fontSize * 0.72;
+  const letterSpacing = fontSize * 0.06 * text.length;
+  const padding = 20;
+  return Math.max(60, Math.ceil(text.length * charWidth + letterSpacing + padding));
 }
