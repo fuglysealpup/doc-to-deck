@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
       });
       rawText = response.choices[0]?.message?.content || "";
     } else {
-      const modelString = model === "opus" ? "claude-opus-4-6" : "claude-sonnet-4-20250514";
+      const modelString = model === "opus" ? "claude-opus-4-6" : "claude-sonnet-4-6";
       const message = await anthropic.messages.create({
         model: modelString,
         max_tokens: 4000,

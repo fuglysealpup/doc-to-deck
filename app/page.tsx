@@ -247,7 +247,7 @@ export default function Home() {
                 transition: "all 0.15s ease",
               }}
             >
-              Claude Sonnet 4
+              Claude Sonnet 4.6
             </button>
             <button
               onClick={() => setModel("opus")}
