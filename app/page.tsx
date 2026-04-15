@@ -18,8 +18,8 @@ export default function Home() {
   const [exportError, setExportError] = useState("");
   const [exportUrl, setExportUrl] = useState("");
   const [model, setModel] = useState<"claude" | "opus" | "openai">("claude");
+  const [pendingAutoExport, setPendingAutoExport] = useState(false);
   const { theme } = useTheme();
-  const didAutoExport = useRef(false);
   const isExporting = useRef(false);
 
   const updateSlide = useCallback(
@@ -85,30 +85,57 @@ export default function Home() {
     }
   }
 
-  // Handle OAuth redirect back
-  useEffect(() => {
-    if (didAutoExport.current) return;
+  function saveFormState() {
+    sessionStorage.setItem("doc_for_export", doc);
+    sessionStorage.setItem("audience_for_export", audience);
+    sessionStorage.setItem("outcome_for_export", desiredOutcome);
+    sessionStorage.setItem("model_for_export", model);
+  }
 
+  // Handle OAuth redirect back — restore state
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("google_auth") === "success") {
       window.history.replaceState({}, "", "/");
 
+      // Restore form inputs
+      const savedDoc = sessionStorage.getItem("doc_for_export");
+      const savedAudience = sessionStorage.getItem("audience_for_export");
+      const savedOutcome = sessionStorage.getItem("outcome_for_export");
+      const savedModel = sessionStorage.getItem("model_for_export");
+      if (savedDoc) setDoc(savedDoc);
+      if (savedAudience) setAudience(savedAudience);
+      if (savedOutcome) setDesiredOutcome(savedOutcome);
+      if (savedModel) setModel(savedModel as "claude" | "opus" | "openai");
+
+      // Restore deck and flag for auto-export
       const savedDeck = sessionStorage.getItem("deck_for_export");
-      const savedTheme = sessionStorage.getItem("theme_for_export");
       if (savedDeck) {
-        didAutoExport.current = true;
         const deck: DeckResponse = JSON.parse(savedDeck);
         setResult(deck);
         setExportStatus("exporting");
-        setTimeout(async () => {
-          await doExport(deck, savedTheme || undefined);
-          sessionStorage.removeItem("deck_for_export");
-          sessionStorage.removeItem("theme_for_export");
-        }, 1500);
+        setPendingAutoExport(true);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Auto-export once deck is restored after OAuth redirect
+  useEffect(() => {
+    if (pendingAutoExport && result && !isExporting.current) {
+      setPendingAutoExport(false);
+      const savedTheme = sessionStorage.getItem("theme_for_export");
+      doExport(result, savedTheme || undefined).then(() => {
+        sessionStorage.removeItem("deck_for_export");
+        sessionStorage.removeItem("theme_for_export");
+        sessionStorage.removeItem("doc_for_export");
+        sessionStorage.removeItem("audience_for_export");
+        sessionStorage.removeItem("outcome_for_export");
+        sessionStorage.removeItem("model_for_export");
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingAutoExport, result]);
 
   async function handleGenerate() {
     if (!doc.trim()) return;
@@ -346,7 +373,7 @@ export default function Home() {
                 </>
               ) : (
                 <button
-                  onClick={() => doExport(result)}
+                  onClick={() => { saveFormState(); doExport(result); }}
                   disabled={exportStatus === "exporting"}
                   className="inline-flex items-center gap-2.5 rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
