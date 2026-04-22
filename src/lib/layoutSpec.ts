@@ -6,9 +6,13 @@ export const MARGIN_T = 44;
 export const MARGIN_B = 30;
 export const CONTENT_W = CANVAS_W - MARGIN_L - MARGIN_R; // 608pt
 
+// Element types are extensible — add new types here without changing existing ones.
+// Future candidates: 'raster-sprite' for pixel-perfect decorative elements via Puppeteer.
+export type ElementType = 'text' | 'shape' | 'table' | 'ellipse';
+
 export interface LayoutElement {
   id: string;
-  type: 'text' | 'shape' | 'table';
+  type: ElementType;
   x: number;
   y: number;
   width: number;

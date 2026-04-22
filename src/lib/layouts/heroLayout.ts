@@ -1,11 +1,22 @@
 import { Slide, Theme } from '@/src/types/deck';
 import { LayoutSpec, LayoutElement, CONTENT_W } from '../layoutSpec';
 import { estimateTextHeight, estimateLines, estimateBadgeWidth, FontTier } from './textMeasure';
-import { getReadableColors } from './readability';
+import { getReadableColors, isDark } from './readability';
 
 const PAD_V = 56;
 const PAD_H = 64;
 const W = 720 - PAD_H * 2;
+
+// Blend accent at low opacity with slide background for decorative circles
+function blendAccent(accent: string, bg: string, opacity: number): string {
+  const ah = accent.replace('#', '');
+  const bh = bg.replace('#', '');
+  const blend = (ac: number, bc: number) => Math.round(opacity * ac + (1 - opacity) * bc);
+  const r = blend(parseInt(ah.substring(0, 2), 16), parseInt(bh.substring(0, 2), 16));
+  const g = blend(parseInt(ah.substring(2, 4), 16), parseInt(bh.substring(2, 4), 16));
+  const b = blend(parseInt(ah.substring(4, 6), 16), parseInt(bh.substring(4, 6), 16));
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
 
 export function heroLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, forceTier?: FontTier): LayoutSpec {
   const n = slide.slide_number;
@@ -15,6 +26,21 @@ export function heroLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, 
   const colors = getReadableColors(bg, theme, slide.type);
   const isClosing = slide.type === 'closing';
   const elements: LayoutElement[] = [];
+
+  // Decorative circles (matches HeroLayout.tsx when theme.decorative.useDecoCircles)
+  if (theme.decorative.useDecoCircles && isDark(bg)) {
+    const circleColor = blendAccent(accent, bg, 0.06);
+    elements.push({
+      id: `deco_circle1_${n}`, type: 'ellipse',
+      x: 720 * 0.62, y: -405 * 0.15, width: 720 * 0.45, height: 720 * 0.45,
+      style: { backgroundColor: circleColor },
+    });
+    elements.push({
+      id: `deco_circle2_${n}`, type: 'ellipse',
+      x: -720 * 0.10, y: 405 * 0.80, width: 720 * 0.35, height: 720 * 0.35,
+      style: { backgroundColor: circleColor },
+    });
+  }
 
   if (isClosing) {
     const badgeText = slide.type.toUpperCase();

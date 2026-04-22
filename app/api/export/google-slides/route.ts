@@ -212,6 +212,37 @@ function specShapeToSlides(el: LayoutElement, slideId: string, slideBg: string =
   return reqs;
 }
 
+function specEllipseToSlides(el: LayoutElement, slideId: string, slideBg: string = '#ffffff'): SlidesRequest[] {
+  const reqs: SlidesRequest[] = [];
+  const bgColor = el.style.backgroundColor ? cssColorToRgb(el.style.backgroundColor, slideBg) : null;
+
+  reqs.push({
+    createShape: {
+      objectId: el.id, shapeType: "ELLIPSE",
+      elementProperties: {
+        pageObjectId: slideId,
+        size: { width: { magnitude: emu(el.width), unit: "EMU" }, height: { magnitude: emu(el.height), unit: "EMU" } },
+        transform: { scaleX: 1, scaleY: 1, translateX: emu(el.x), translateY: emu(el.y), unit: "EMU" },
+      },
+    },
+  });
+
+  if (bgColor) {
+    reqs.push({
+      updateShapeProperties: {
+        objectId: el.id,
+        shapeProperties: {
+          shapeBackgroundFill: { solidFill: { color: { rgbColor: bgColor } } },
+          outline: { propertyState: "NOT_RENDERED" },
+        },
+        fields: "shapeBackgroundFill.solidFill.color,outline",
+      },
+    });
+  }
+
+  return reqs;
+}
+
 function specTableToSlides(el: LayoutElement, slideId: string): SlidesRequest[] {
   const reqs: SlidesRequest[] = [];
   const td = el.tableData;
@@ -324,6 +355,19 @@ function specTableToSlides(el: LayoutElement, slideId: string): SlidesRequest[] 
   });
 
   return reqs;
+}
+
+// ─── ELEMENT DISPATCH ───
+// Extensible converter registry. To add a new element type (e.g. 'raster-sprite'),
+// add a new converter function and register it here. No other changes needed.
+function convertElement(element: LayoutElement, slideId: string, slideBg: string): SlidesRequest[] {
+  switch (element.type) {
+    case 'text': return specTextToSlides(element, slideId, slideBg);
+    case 'shape': return specShapeToSlides(element, slideId, slideBg);
+    case 'table': return specTableToSlides(element, slideId);
+    case 'ellipse': return specEllipseToSlides(element, slideId, slideBg);
+    default: return []; // Unknown element types are silently skipped
+  }
 }
 
 // ─── CONTENT CONDENSATION ───
@@ -445,19 +489,9 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // Convert each element
+      // Convert each element via extensible dispatch
       for (const element of spec.elements) {
-        switch (element.type) {
-          case 'text':
-            requests.push(...specTextToSlides(element, slideId, spec.background));
-            break;
-          case 'shape':
-            requests.push(...specShapeToSlides(element, slideId, spec.background));
-            break;
-          case 'table':
-            requests.push(...specTableToSlides(element, slideId));
-            break;
-        }
+        requests.push(...convertElement(element, slideId, spec.background));
       }
     }
 
@@ -560,11 +594,7 @@ export async function POST(request: NextRequest) {
             if (vElement.children) {
               vElement.children = vElement.children.map(c => ({ ...c, id: `${c.id}_v${iteration + 1}` }));
             }
-            switch (vElement.type) {
-              case 'text': reExportRequests.push(...specTextToSlides(vElement, newSlideId, spec.background)); break;
-              case 'shape': reExportRequests.push(...specShapeToSlides(vElement, newSlideId, spec.background)); break;
-              case 'table': reExportRequests.push(...specTableToSlides(vElement, newSlideId)); break;
-            }
+            reExportRequests.push(...convertElement(vElement, newSlideId, spec.background));
           }
         }
 

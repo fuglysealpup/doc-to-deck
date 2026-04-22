@@ -12,6 +12,28 @@ export function quoteLayoutSpec(slide: Slide, theme: Theme, totalSlides: number,
   const contentW = 520;
   const contentX = (720 - contentW) / 2;
 
+  const accent = theme.accents[slide.type];
+  const isProof = slide.type === 'proof';
+
+  // Decorative quote mark for proof slides (matches QuoteLayout.tsx)
+  if (isProof) {
+    // Pre-composite accent at 15% opacity against the background
+    const ah = accent.replace('#', '');
+    const bh = bg.replace('#', '');
+    const blend = (ac: number, bc: number) => Math.round(0.15 * ac + 0.85 * bc);
+    const r = blend(parseInt(ah.substring(0, 2), 16), parseInt(bh.substring(0, 2), 16));
+    const g = blend(parseInt(ah.substring(2, 4), 16), parseInt(bh.substring(2, 4), 16));
+    const b = blend(parseInt(ah.substring(4, 6), 16), parseInt(bh.substring(4, 6), 16));
+    const quoteColor = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+
+    elements.push({
+      id: `quotemark_${n}`, type: 'text',
+      x: (720 - 100) / 2, y: 30, width: 100, height: 70,
+      content: '\u201C',
+      style: { fontSize: 72, color: quoteColor, alignment: 'center', lineHeight: 1 },
+    });
+  }
+
   const badgeText = slide.type.toUpperCase();
   const badgeW = estimateBadgeWidth(badgeText, 10);
   elements.push({
