@@ -139,6 +139,42 @@ function getOpenAI(): OpenAI {
   return openaiClient;
 }
 
+// Attempt to parse JSON, repairing truncation if needed
+function parseOrRepairJson(text: string): Record<string, unknown> {
+  try {
+    return JSON.parse(text);
+  } catch {
+    // Truncated JSON: close any open strings, arrays, objects
+    let repaired = text;
+    // Close unterminated string
+    const quotes = (repaired.match(/"/g) || []).length;
+    if (quotes % 2 !== 0) repaired += '"';
+    // Count open brackets/braces and close them
+    let openBraces = 0;
+    let openBrackets = 0;
+    let inString = false;
+    for (let i = 0; i < repaired.length; i++) {
+      const c = repaired[i];
+      if (c === '"' && (i === 0 || repaired[i - 1] !== '\\')) inString = !inString;
+      if (inString) continue;
+      if (c === '{') openBraces++;
+      if (c === '}') openBraces--;
+      if (c === '[') openBrackets++;
+      if (c === ']') openBrackets--;
+    }
+    // Remove any trailing comma before closing
+    repaired = repaired.replace(/,\s*$/, '');
+    for (let i = 0; i < openBrackets; i++) repaired += ']';
+    for (let i = 0; i < openBraces; i++) repaired += '}';
+
+    try {
+      return JSON.parse(repaired);
+    } catch {
+      throw new Error("Failed to parse LLM response as JSON. The response may have been truncated.");
+    }
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -169,7 +205,7 @@ export async function POST(request: NextRequest) {
     if (model === "openai") {
       const response = await getOpenAI().chat.completions.create({
         model: "gpt-5.4",
-        max_completion_tokens: 4000,
+        max_completion_tokens: 8000,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: doc },
@@ -180,7 +216,7 @@ export async function POST(request: NextRequest) {
       const modelString = model === "opus" ? "claude-opus-4-7" : "claude-sonnet-4-6";
       const message = await anthropic.messages.create({
         model: modelString,
-        max_tokens: 4000,
+        max_tokens: 8000,
         system: systemPrompt,
         messages: [{ role: "user", content: doc }],
       });
@@ -195,9 +231,10 @@ export async function POST(request: NextRequest) {
     }
 
     let cleanJson = rawText.replace(/```json|```/g, "").trim();
-    // Fix common LLM JSON errors: trailing commas before ] or }
+    // Fix trailing commas
     cleanJson = cleanJson.replace(/,\s*([}\]])/g, '$1');
-    const parsed = JSON.parse(cleanJson);
+    // Attempt to repair truncated JSON (response hit max_tokens)
+    const parsed = parseOrRepairJson(cleanJson);
     parsed.model_used = model;
     return NextResponse.json(parsed);
   } catch (error: unknown) {
