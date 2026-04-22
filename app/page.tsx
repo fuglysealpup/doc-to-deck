@@ -121,7 +121,8 @@ export default function Home() {
       setExportStatus("success");
       setExportUrl(data.url);
       window.open(data.url, "_blank");
-      setTimeout(() => { setExportStatus("idle"); isExporting.current = false; }, 5000);
+      isExporting.current = false;
+      // Don't auto-reset — keep the link visible until user generates a new deck
     } catch {
       setExportStatus("error");
       setExportError("Failed to connect to the server.");
@@ -134,6 +135,8 @@ export default function Home() {
     setLoading(true);
     setError("");
     setResult(null);
+    setExportStatus("idle");
+    setExportUrl("");
 
     let deckData: DeckResponse | null = null;
 
