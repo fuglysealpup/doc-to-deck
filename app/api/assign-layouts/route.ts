@@ -189,7 +189,9 @@ export async function POST(request: NextRequest) {
       rawText = textBlock.text;
     }
 
-    const layouts = JSON.parse(rawText.replace(/```json|```/g, "").trim());
+    let cleanJson = rawText.replace(/```json|```/g, "").trim();
+    cleanJson = cleanJson.replace(/,\s*([}\]])/g, '$1');
+    const layouts = JSON.parse(cleanJson);
     return NextResponse.json({ layouts });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : "Layout assignment failed.";

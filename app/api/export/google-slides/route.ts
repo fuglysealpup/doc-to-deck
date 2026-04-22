@@ -422,7 +422,9 @@ Return ONLY a JSON object: {"bullets": ["bullet 1", "bullet 2", ...]}`,
     });
 
     const text = response.content[0].type === 'text' ? response.content[0].text : '';
-    const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+    let cleanJson = text.replace(/```json|```/g, '').trim();
+    cleanJson = cleanJson.replace(/,\s*([}\]])/g, '$1');
+    const parsed = JSON.parse(cleanJson);
     return { ...slide, bullets: parsed.bullets };
   } catch {
     return slide; // if condensation fails, use original

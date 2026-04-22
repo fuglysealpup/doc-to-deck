@@ -194,7 +194,10 @@ export async function POST(request: NextRequest) {
       rawText = textBlock.text;
     }
 
-    const parsed = JSON.parse(rawText.replace(/```json|```/g, "").trim());
+    let cleanJson = rawText.replace(/```json|```/g, "").trim();
+    // Fix common LLM JSON errors: trailing commas before ] or }
+    cleanJson = cleanJson.replace(/,\s*([}\]])/g, '$1');
+    const parsed = JSON.parse(cleanJson);
     parsed.model_used = model;
     return NextResponse.json(parsed);
   } catch (error: unknown) {
