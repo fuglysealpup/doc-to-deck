@@ -175,7 +175,7 @@ export async function POST(request: NextRequest) {
       });
       rawText = response.choices[0]?.message?.content || "[]";
     } else {
-      const modelString = model === "opus" ? "claude-opus-4-6" : "claude-sonnet-4-6";
+      const modelString = model === "opus" ? "claude-opus-4-7" : "claude-sonnet-4-6";
       const message = await client.messages.create({
         model: modelString,
         max_tokens: 1000,

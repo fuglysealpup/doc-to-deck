@@ -285,7 +285,7 @@ export default function Home() {
                 transition: "all 0.15s ease",
               }}
             >
-              Claude Opus 4.6
+              Claude Opus 4.7
             </button>
             <button
               onClick={() => setModel("openai")}

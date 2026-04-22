@@ -275,7 +275,7 @@ export default function SlideRenderer({ deck, onUpdateSlide }: SlideRendererProp
             </span>
             <span style={{ fontSize: 12, color: '#999' }}>
               {deck.model_used === 'openai' ? 'GPT-5.4'
-                : deck.model_used === 'opus' ? 'Claude Opus 4.6'
+                : deck.model_used === 'opus' ? 'Claude Opus 4.7'
                 : 'Claude Sonnet 4.6'}
             </span>
           </div>
