@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { DeckResponse, Slide, SlideLayout } from "@/src/types/deck";
 import SlideRenderer from "@/src/components/SlideRenderer";
 import { useTheme } from "@/src/lib/themeContext";
@@ -18,7 +18,6 @@ export default function Home() {
   const [exportError, setExportError] = useState("");
   const [exportUrl, setExportUrl] = useState("");
   const [model, setModel] = useState<"claude" | "opus" | "openai">("claude");
-  const [pendingAutoExport, setPendingAutoExport] = useState(false);
   const { theme } = useTheme();
   const isExporting = useRef(false);
 
@@ -37,17 +36,50 @@ export default function Home() {
     []
   );
 
-  async function doExport(deck: DeckResponse, overrideTheme?: string) {
+  // Open Google OAuth in a popup — returns a promise that resolves when auth completes
+  function googleAuth(): Promise<boolean> {
+    return new Promise((resolve) => {
+      const popup = window.open(
+        "/api/auth/google",
+        "google_auth",
+        "width=500,height=600,menubar=no,toolbar=no"
+      );
+
+      function onMessage(event: MessageEvent) {
+        if (event.origin !== window.location.origin) return;
+        try {
+          const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+          if (data.type === "google_auth") {
+            window.removeEventListener("message", onMessage);
+            resolve(data.status === "success");
+          }
+        } catch { /* ignore non-JSON messages */ }
+      }
+
+      window.addEventListener("message", onMessage);
+
+      // If popup is closed without completing auth
+      const check = setInterval(() => {
+        if (popup && popup.closed) {
+          clearInterval(check);
+          window.removeEventListener("message", onMessage);
+          resolve(false);
+        }
+      }, 500);
+    });
+  }
+
+  async function doExport(deck: DeckResponse) {
     if (isExporting.current) return;
     isExporting.current = true;
     setExportStatus("exporting");
     setExportError("");
     setExportUrl("");
 
-    const themeName = overrideTheme ?? theme.name.toLowerCase();
+    const themeName = theme.name.toLowerCase();
 
     try {
-      const res = await fetch("/api/export/google-slides", {
+      let res = await fetch("/api/export/google-slides", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -57,15 +89,27 @@ export default function Home() {
         }),
       });
 
-      const data = await res.json();
-
+      // If not authenticated, open popup and retry
       if (res.status === 401) {
-        isExporting.current = false;
-        sessionStorage.setItem("deck_for_export", JSON.stringify(deck));
-        sessionStorage.setItem("theme_for_export", themeName);
-        window.location.href = "/api/auth/google";
-        return;
+        const authed = await googleAuth();
+        if (!authed) {
+          setExportStatus("idle");
+          isExporting.current = false;
+          return;
+        }
+        // Retry the export with the new token
+        res = await fetch("/api/export/google-slides", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: deck.slides[0]?.headline || "Untitled Deck",
+            slides: deck.slides,
+            theme: themeName,
+          }),
+        });
       }
+
+      const data = await res.json();
 
       if (!res.ok) {
         setExportStatus("error");
@@ -84,58 +128,6 @@ export default function Home() {
       isExporting.current = false;
     }
   }
-
-  function saveFormState() {
-    sessionStorage.setItem("doc_for_export", doc);
-    sessionStorage.setItem("audience_for_export", audience);
-    sessionStorage.setItem("outcome_for_export", desiredOutcome);
-    sessionStorage.setItem("model_for_export", model);
-  }
-
-  // Handle OAuth redirect back — restore state
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("google_auth") === "success") {
-      window.history.replaceState({}, "", "/");
-
-      // Restore form inputs
-      const savedDoc = sessionStorage.getItem("doc_for_export");
-      const savedAudience = sessionStorage.getItem("audience_for_export");
-      const savedOutcome = sessionStorage.getItem("outcome_for_export");
-      const savedModel = sessionStorage.getItem("model_for_export");
-      if (savedDoc) setDoc(savedDoc);
-      if (savedAudience) setAudience(savedAudience);
-      if (savedOutcome) setDesiredOutcome(savedOutcome);
-      if (savedModel) setModel(savedModel as "claude" | "opus" | "openai");
-
-      // Restore deck and flag for auto-export
-      const savedDeck = sessionStorage.getItem("deck_for_export");
-      if (savedDeck) {
-        const deck: DeckResponse = JSON.parse(savedDeck);
-        setResult(deck);
-        setExportStatus("exporting");
-        setPendingAutoExport(true);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Auto-export once deck is restored after OAuth redirect
-  useEffect(() => {
-    if (pendingAutoExport && result && !isExporting.current) {
-      setPendingAutoExport(false);
-      const savedTheme = sessionStorage.getItem("theme_for_export");
-      doExport(result, savedTheme || undefined).then(() => {
-        sessionStorage.removeItem("deck_for_export");
-        sessionStorage.removeItem("theme_for_export");
-        sessionStorage.removeItem("doc_for_export");
-        sessionStorage.removeItem("audience_for_export");
-        sessionStorage.removeItem("outcome_for_export");
-        sessionStorage.removeItem("model_for_export");
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pendingAutoExport, result]);
 
   async function handleGenerate() {
     if (!doc.trim()) return;
@@ -373,7 +365,7 @@ export default function Home() {
                 </>
               ) : (
                 <button
-                  onClick={() => { saveFormState(); doExport(result); }}
+                  onClick={() => doExport(result)}
                   disabled={exportStatus === "exporting"}
                   className="inline-flex items-center gap-2.5 rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >

@@ -5,9 +5,9 @@ export async function GET(request: NextRequest) {
   const error = request.nextUrl.searchParams.get("error");
 
   if (error || !code) {
-    const baseUrl = request.nextUrl.origin;
-    return NextResponse.redirect(
-      `${baseUrl}/?google_auth=error&reason=${error || "no_code"}`
+    return new NextResponse(
+      closePopupHtml("error", error || "no_code"),
+      { status: 200, headers: { "Content-Type": "text/html" } }
     );
   }
 
@@ -24,15 +24,18 @@ export async function GET(request: NextRequest) {
   });
 
   if (!tokenRes.ok) {
-    const baseUrl = request.nextUrl.origin;
-    return NextResponse.redirect(
-      `${baseUrl}/?google_auth=error&reason=token_exchange_failed`
+    return new NextResponse(
+      closePopupHtml("error", "token_exchange_failed"),
+      { status: 200, headers: { "Content-Type": "text/html" } }
     );
   }
 
   const tokens = await tokenRes.json();
-  const baseUrl = request.nextUrl.origin;
-  const response = NextResponse.redirect(`${baseUrl}/?google_auth=success`);
+
+  const response = new NextResponse(
+    closePopupHtml("success"),
+    { status: 200, headers: { "Content-Type": "text/html" } }
+  );
 
   response.cookies.set("google_access_token", tokens.access_token, {
     httpOnly: true,
@@ -43,4 +46,21 @@ export async function GET(request: NextRequest) {
   });
 
   return response;
+}
+
+function closePopupHtml(status: string, reason?: string): string {
+  const message = JSON.stringify({ type: "google_auth", status, reason });
+  return `<!DOCTYPE html>
+<html><head><title>Signing in...</title></head>
+<body>
+<p style="font-family:system-ui;text-align:center;margin-top:40vh;color:#999">
+  Signing in... this window will close automatically.
+</p>
+<script>
+  if (window.opener) {
+    window.opener.postMessage(${JSON.stringify(message)}, window.location.origin);
+  }
+  window.close();
+</script>
+</body></html>`;
 }
