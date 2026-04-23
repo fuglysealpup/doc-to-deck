@@ -27,20 +27,7 @@ export function heroLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, 
   const isClosing = slide.type === 'closing';
   const elements: LayoutElement[] = [];
 
-  // Decorative circles (matches HeroLayout.tsx when theme.decorative.useDecoCircles)
-  if (theme.decorative.useDecoCircles && isDark(bg)) {
-    const circleColor = blendAccent(accent, bg, 0.06);
-    elements.push({
-      id: `deco_circle1_${n}`, type: 'ellipse',
-      x: 720 * 0.62, y: -405 * 0.15, width: 720 * 0.45, height: 720 * 0.45,
-      style: { backgroundColor: circleColor },
-    });
-    elements.push({
-      id: `deco_circle2_${n}`, type: 'ellipse',
-      x: -720 * 0.10, y: 405 * 0.80, width: 720 * 0.35, height: 720 * 0.35,
-      style: { backgroundColor: circleColor },
-    });
-  }
+
 
   if (isClosing) {
     const badgeText = slide.type.toUpperCase();
