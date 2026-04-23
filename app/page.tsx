@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { DeckResponse, Slide, SlideLayout } from "@/src/types/deck";
 import SlideRenderer from "@/src/components/SlideRenderer";
 import { useTheme } from "@/src/lib/themeContext";
@@ -18,8 +18,17 @@ export default function Home() {
   const [exportError, setExportError] = useState("");
   const [exportUrl, setExportUrl] = useState("");
   const [model, setModel] = useState<"claude" | "opus" | "openai">("claude");
+  const [googleConnected, setGoogleConnected] = useState(false);
   const { theme } = useTheme();
   const isExporting = useRef(false);
+
+  // Check Google connection status on load
+  useEffect(() => {
+    fetch("/api/auth/google/status")
+      .then(r => r.json())
+      .then(data => setGoogleConnected(data.connected))
+      .catch(() => {});
+  }, []);
 
   const updateSlide = useCallback(
     (slideNumber: number, updatedSlide: Slide) => {
@@ -51,6 +60,7 @@ export default function Home() {
           const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
           if (data.type === "google_auth") {
             window.removeEventListener("message", onMessage);
+            if (data.status === "success") setGoogleConnected(true);
             resolve(data.status === "success");
           }
         } catch { /* ignore non-JSON messages */ }
@@ -347,8 +357,33 @@ export default function Home() {
           <>
             <SlideRenderer deck={result} onUpdateSlide={updateSlide} />
 
-            {/* Export button */}
-            <div className="mt-8 flex flex-col items-center gap-2">
+            {/* Google connection + Export */}
+            <div className="mt-8 flex flex-col items-center gap-3">
+              {!googleConnected && exportStatus !== "exporting" && exportStatus !== "success" && (
+                <button
+                  onClick={async () => {
+                    const ok = await googleAuth();
+                    if (ok) setGoogleConnected(true);
+                  }}
+                  className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-medium text-gray-400 transition hover:text-gray-600"
+                  style={{ background: '#fafafa', border: '1px solid #eee' }}
+                >
+                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                    <polyline points="10 17 15 12 10 7" />
+                    <line x1="15" y1="12" x2="3" y2="12" />
+                  </svg>
+                  Connect Google Slides
+                </button>
+              )}
+              {googleConnected && exportStatus !== "exporting" && exportStatus !== "success" && (
+                <span className="inline-flex items-center gap-1.5 text-xs text-gray-300">
+                  <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  Google connected
+                </span>
+              )}
               {exportStatus === "success" && exportUrl ? (
                 <>
                   <div className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-6 py-3 text-sm font-medium text-emerald-700">
