@@ -283,7 +283,7 @@ export default function SlideRenderer({ deck, onUpdateSlide }: SlideRendererProp
       </div>
 
       {/* Slides */}
-      <div className="flex flex-col gap-2.5">
+      <div id="slide-deck" className="flex flex-col gap-2.5">
         {deck.slides.map((slide) => {
           const layoutName = getLayoutForSlide(slide);
           const LayoutComponent = layoutComponentMap[layoutName] || layoutComponentMap['list'];

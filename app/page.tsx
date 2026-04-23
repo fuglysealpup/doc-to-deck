@@ -132,12 +132,73 @@ export default function Home() {
       setExportUrl(data.url);
       window.open(data.url, "_blank");
       isExporting.current = false;
-      // Don't auto-reset — keep the link visible until user generates a new deck
     } catch {
       setExportStatus("error");
       setExportError("Failed to connect to the server.");
       isExporting.current = false;
     }
+  }
+
+  function printSlides() {
+    const slideContainer = document.getElementById('slide-deck');
+    if (!slideContainer) return;
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    // Get all slide elements (the ones with aspect-ratio 16/9)
+    const slides = slideContainer.querySelectorAll('[style*="aspect-ratio"]');
+    let slidesHtml = '';
+    slides.forEach((slide) => {
+      slidesHtml += `<div class="slide-page">${slide.outerHTML}</div>`;
+    });
+
+    printWindow.document.write(`<!DOCTYPE html>
+<html>
+<head>
+<title>Deck</title>
+<style>
+  @page {
+    size: 10in 5.625in;
+    margin: 0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { margin: 0; padding: 0; }
+  .slide-page {
+    width: 10in;
+    height: 5.625in;
+    overflow: hidden;
+    page-break-after: always;
+    break-after: page;
+  }
+  .slide-page:last-child {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+  .slide-page > * {
+    width: 100% !important;
+    height: 100% !important;
+    aspect-ratio: auto !important;
+  }
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>${slidesHtml}</body>
+</html>`);
+    printWindow.document.close();
+
+    // Wait for content to render, then print
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.print();
+      }, 300);
+    };
+    // Fallback if onload doesn't fire
+    setTimeout(() => {
+      printWindow.print();
+    }, 1000);
   }
 
   async function handleGenerate() {
@@ -392,40 +453,64 @@ export default function Home() {
                     </svg>
                     Deck ready
                   </div>
-                  <a
-                    href={exportUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-gray-500 underline underline-offset-2 hover:text-gray-800 transition"
-                  >
-                    Open in Google Slides &rarr;
-                  </a>
+                  <div className="flex items-center gap-4">
+                    <a
+                      href={exportUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-gray-500 underline underline-offset-2 hover:text-gray-800 transition"
+                    >
+                      Open in Google Slides &rarr;
+                    </a>
+                    <span className="text-gray-300">|</span>
+                    <button
+                      onClick={printSlides}
+                      className="text-sm text-gray-500 underline underline-offset-2 hover:text-gray-800 transition"
+                    >
+                      Download PDF
+                    </button>
+                  </div>
                 </>
               ) : (
-                <button
-                  onClick={() => doExport(result)}
-                  disabled={exportStatus === "exporting"}
-                  className="inline-flex items-center gap-2.5 rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {exportStatus === "exporting" ? (
-                    <>
-                      <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                      Exporting...
-                    </>
-                  ) : (
-                    <>
-                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="2" y="3" width="20" height="14" rx="2" />
-                        <path d="M8 21h8" />
-                        <path d="M12 17v4" />
-                      </svg>
-                      Export to Google Slides
-                    </>
-                  )}
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => doExport(result)}
+                    disabled={exportStatus === "exporting"}
+                    className="inline-flex items-center gap-2.5 rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {exportStatus === "exporting" ? (
+                      <>
+                        <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                        Exporting...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="2" y="3" width="20" height="14" rx="2" />
+                          <path d="M8 21h8" />
+                          <path d="M12 17v4" />
+                        </svg>
+                        Export to Google Slides
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={printSlides}
+                    disabled={exportStatus === "exporting"}
+                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                      <line x1="16" y1="13" x2="8" y2="13" />
+                      <line x1="16" y1="17" x2="8" y2="17" />
+                    </svg>
+                    PDF
+                  </button>
+                </div>
               )}
               {exportStatus === "error" && exportError && (
                 <p className="text-xs text-red-600">{exportError}</p>
