@@ -212,6 +212,82 @@ function specShapeToSlides(el: LayoutElement, slideId: string, slideBg: string =
   return reqs;
 }
 
+function specBulletListToSlides(el: LayoutElement, slideId: string, slideBg: string = '#ffffff'): SlidesRequest[] {
+  const reqs: SlidesRequest[] = [];
+  const items = el.bulletItems;
+  if (!items || items.length === 0) return reqs;
+
+  const color = cssColorToRgb(el.style.color || '#1a1a1a', slideBg);
+  const text = items.map(item => item.text).join('\n');
+
+  // Create single text box
+  reqs.push({
+    createShape: {
+      objectId: el.id, shapeType: "TEXT_BOX",
+      elementProperties: {
+        pageObjectId: slideId,
+        size: { width: { magnitude: emu(el.width), unit: "EMU" }, height: { magnitude: emu(el.height), unit: "EMU" } },
+        transform: { scaleX: 1, scaleY: 1, translateX: emu(el.x), translateY: emu(el.y), unit: "EMU" },
+      },
+    },
+  });
+
+  reqs.push({ insertText: { objectId: el.id, text, insertionIndex: 0 } });
+
+  // Apply native bullet markers
+  reqs.push({
+    createParagraphBullets: {
+      objectId: el.id,
+      textRange: { type: "ALL" },
+      bulletPreset: "BULLET_DISC_CIRCLE_SQUARE",
+    },
+  });
+
+  // Base text style
+  reqs.push({
+    updateTextStyle: {
+      objectId: el.id,
+      style: {
+        fontSize: { magnitude: el.style.fontSize || 14, unit: "PT" },
+        foregroundColor: { opaqueColor: { rgbColor: color } },
+      },
+      textRange: { type: "ALL" },
+      fields: "fontSize,foregroundColor",
+    },
+  });
+
+  // Paragraph spacing
+  reqs.push({
+    updateParagraphStyle: {
+      objectId: el.id,
+      style: {
+        lineSpacing: Math.round((el.style.lineHeight || 1.5) * 100),
+        spaceAbove: { magnitude: 6, unit: "PT" },
+      },
+      textRange: { type: "ALL" },
+      fields: "lineSpacing,spaceAbove",
+    },
+  });
+
+  // Bold lead-in portions
+  let charOffset = 0;
+  for (const item of items) {
+    if (item.boldLead) {
+      reqs.push({
+        updateTextStyle: {
+          objectId: el.id,
+          style: { bold: true },
+          textRange: { type: "FIXED_RANGE", startIndex: charOffset, endIndex: charOffset + item.boldLead.length },
+          fields: "bold",
+        },
+      });
+    }
+    charOffset += item.text.length + 1; // +1 for newline
+  }
+
+  return reqs;
+}
+
 function specEllipseToSlides(el: LayoutElement, slideId: string, slideBg: string = '#ffffff'): SlidesRequest[] {
   const reqs: SlidesRequest[] = [];
   const bgColor = el.style.backgroundColor ? cssColorToRgb(el.style.backgroundColor, slideBg) : null;
@@ -366,6 +442,7 @@ function convertElement(element: LayoutElement, slideId: string, slideBg: string
     case 'shape': return specShapeToSlides(element, slideId, slideBg);
     case 'table': return specTableToSlides(element, slideId);
     case 'ellipse': return specEllipseToSlides(element, slideId, slideBg);
+    case 'bulletList': return specBulletListToSlides(element, slideId, slideBg);
     default: return []; // Unknown element types are silently skipped
   }
 }

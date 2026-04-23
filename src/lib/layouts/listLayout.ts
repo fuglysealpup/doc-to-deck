@@ -1,42 +1,36 @@
 import { Slide, Theme } from '@/src/types/deck';
 import { LayoutSpec, MARGIN_L, MARGIN_B, CONTENT_W } from '../layoutSpec';
 import { commonHeader, counterElement, parseBulletLeadIn } from './common';
-import { estimateTextHeight, estimateBulletListHeight, determineFontTier, FONT_TIERS, FontTier } from './textMeasure';
+import { estimateBulletListHeight, determineFontTier, FONT_TIERS, FontTier } from './textMeasure';
 import { getReadableColors } from './readability';
 
 export function listLayoutSpec(slide: Slide, theme: Theme, totalSlides: number, forceTier?: FontTier): LayoutSpec {
   const n = slide.slide_number;
   const bg = theme.backgrounds[slide.type];
-  const accent = theme.accents[slide.type];
   const { elements, nextY, tier: headerTier, colors } = commonHeader(slide, theme, undefined, forceTier);
 
   const availH = 405 - MARGIN_B - nextY;
-  const textW = CONTENT_W - 18; // dot + gap
 
   // Measure at standard tier
   let bodyFont = FONT_TIERS.standard.body;
-  const stdH = estimateBulletListHeight(slide.bullets, bodyFont + 1, textW, 1.6, 16); // +1 for list's 14pt
+  const stdH = estimateBulletListHeight(slide.bullets, bodyFont + 1, CONTENT_W, 1.6, 8);
   const tier = forceTier || determineFontTier(stdH, availH);
   if (tier !== 'standard') bodyFont = FONT_TIERS.compact.body;
 
-  let currentY = nextY;
-  slide.bullets.forEach((bullet, i) => {
+  // Single bullet list element — renders as one text box with native bullets
+  const bulletItems = slide.bullets.map((bullet) => {
     const parsed = parseBulletLeadIn(bullet);
-    const itemH = estimateTextHeight(bullet, bodyFont + 1, textW, 1.6);
+    return {
+      text: parsed ? `${parsed.lead} ${parsed.rest}` : bullet,
+      boldLead: parsed ? parsed.lead : undefined,
+    };
+  });
 
-    elements.push({
-      id: `dot_${n}_${i}`, type: 'shape',
-      x: MARGIN_L, y: currentY + 6, width: 6, height: 6,
-      style: { backgroundColor: accent, borderRadius: 3 },
-    });
-    elements.push({
-      id: `item_${n}_${i}`, type: 'text',
-      x: MARGIN_L + 18, y: currentY, width: textW, height: itemH,
-      content: parsed ? `${parsed.lead} ${parsed.rest}` : bullet,
-      richContent: parsed ? [{ bold: parsed.lead, regular: ` ${parsed.rest}` }] : undefined,
-      style: { fontSize: bodyFont + 1, color: colors.body, lineHeight: 1.6 },
-    });
-    currentY += itemH + 16;
+  elements.push({
+    id: `bullets_${n}`, type: 'bulletList',
+    x: MARGIN_L, y: nextY, width: CONTENT_W, height: availH,
+    style: { fontSize: bodyFont + 1, color: colors.body, lineHeight: 1.6 },
+    bulletItems,
   });
 
   elements.push(counterElement(n, totalSlides, colors.counterColor));

@@ -8,7 +8,7 @@ export const CONTENT_W = CANVAS_W - MARGIN_L - MARGIN_R; // 608pt
 
 // Element types are extensible — add new types here without changing existing ones.
 // Future candidates: 'raster-sprite' for pixel-perfect decorative elements via Puppeteer.
-export type ElementType = 'text' | 'shape' | 'table' | 'ellipse';
+export type ElementType = 'text' | 'shape' | 'table' | 'ellipse' | 'bulletList';
 
 export interface LayoutElement {
   id: string;
@@ -21,6 +21,7 @@ export interface LayoutElement {
   content?: string;
   richContent?: { bold: string; regular: string }[];
   tableData?: TableData;
+  bulletItems?: { text: string; boldLead?: string }[];
   children?: LayoutElement[];
 }
 
